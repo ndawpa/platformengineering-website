@@ -1,0 +1,114 @@
+---
+title: "Como diagnosticar CrashLoopBackOff no Kubernetes"
+description: "Guia prático para diagnosticar e resolver CrashLoopBackOff em workloads Kubernetes com uma sequência reproduzível."
+publishedAt: 2026-08-25
+updatedAt: 2026-08-25
+author: "Platform Engineering Brasil"
+category: "Kubernetes"
+tags: [kubernetes, troubleshooting, containers]
+draft: false
+featured: true
+level: Intermediário
+prerequisites:
+  - Acesso a um cluster Kubernetes
+  - Familiaridade básica com kubectl
+objectives:
+  - Identificar o container que está reiniciando
+  - Interpretar logs, eventos e códigos de saída
+  - Distinguir falhas da aplicação, recursos e probes
+sources:
+  - title: "Kubernetes — Debug Running Pods"
+    url: "https://kubernetes.io/docs/tasks/debug/debug-application/debug-running-pod/"
+revisionNotes: []
+---
+import Callout from '../../../components/Callout.astro';
+
+`CrashLoopBackOff` indica que um container inicia, termina e o Kubernetes está aumentando o intervalo antes da próxima tentativa. Ele descreve um comportamento de reinício — não a causa original.
+
+## 1. Confirme o container afetado
+
+Liste o pod e observe estado, reinícios e eventos recentes:
+
+```bash
+kubectl get pod api-7d9f6c8b7-x2k9p -n producao
+kubectl describe pod api-7d9f6c8b7-x2k9p -n producao
+```
+
+Em pods com sidecars, confira `Container States` para não investigar o processo errado. Procure por `Reason`, `Exit Code`, `Started` e `Finished`.
+
+## 2. Leia os logs da execução anterior
+
+O container atual pode estar aguardando reinício e não ter logs úteis. A opção `--previous` acessa a instância que acabou de encerrar:
+
+```bash
+kubectl logs api-7d9f6c8b7-x2k9p \
+  -n producao \
+  -c api \
+  --previous \
+  --timestamps
+```
+
+<Callout type="warning" title="Preserve a evidência">
+  Evite deletar o pod antes de coletar descrição, eventos e logs. A recriação pode remover exatamente o contexto necessário para o diagnóstico.
+</Callout>
+
+## 3. Interprete o código de saída
+
+| Código | Interpretação comum | Próxima verificação |
+|---|---|---|
+| 1 | Erro da aplicação | Stack trace e configuração |
+| 126 | Arquivo sem permissão de execução | Permissões e securityContext |
+| 127 | Comando não encontrado | entrypoint, command e imagem |
+| 137 | SIGKILL, frequentemente OOM | Limites de memória e eventos |
+| 143 | SIGTERM | Lifecycle e encerramento gracioso |
+
+Para confirmar falta de memória, procure `OOMKilled` no último estado do container:
+
+```bash
+kubectl get pod api-7d9f6c8b7-x2k9p -n producao \
+  -o jsonpath='{.status.containerStatuses[*].lastState.terminated.reason}'
+```
+
+## 4. Verifique configuração e dependências
+
+Compare a especificação efetiva com o esperado. Confirme `command`, `args`, variáveis, ConfigMaps, Secrets, volumes e service accounts.
+
+```bash
+kubectl get pod api-7d9f6c8b7-x2k9p -n producao -o yaml
+kubectl get events -n producao --sort-by='.lastTimestamp'
+```
+
+Falhas de DNS, banco indisponível ou migração concorrente também podem encerrar a aplicação. O processo deve diferenciar dependência temporariamente indisponível de configuração inválida.
+
+## 5. Revise as probes
+
+Uma `livenessProbe` agressiva pode matar uma aplicação saudável, mas lenta para iniciar. Use `startupProbe` quando o boot é demorado e deixe a liveness detectar travamentos reais.
+
+```yaml
+startupProbe:
+  httpGet:
+    path: /health/startup
+    port: 8080
+  failureThreshold: 30
+  periodSeconds: 10
+livenessProbe:
+  httpGet:
+    path: /health/live
+    port: 8080
+  periodSeconds: 10
+```
+
+## 6. Reproduza com segurança
+
+Se logs não bastarem, use `kubectl debug` ou execute a imagem em ambiente isolado com o mesmo comando. Não altere a produção repetidamente para testar hipóteses.
+
+## Checklist final
+
+1. Identifique container e último estado.
+2. Colete logs atuais e anteriores.
+3. Correlacione código de saída e eventos.
+4. Valide configuração, recursos e dependências.
+5. Revise probes e lifecycle.
+6. Corrija a causa e acompanhe novos reinícios.
+
+O diagnóstico mais rápido segue evidências em ordem. Começar aumentando memória ou relaxando probes pode apenas esconder o defeito.

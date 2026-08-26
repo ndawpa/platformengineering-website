@@ -1,0 +1,11 @@
+---
+import { SITE } from '../config/site';
+---
+<footer class="mt-24 border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-ink-900">
+  <div class="container-shell grid gap-10 py-12 md:grid-cols-[1.4fr_1fr_1fr]">
+    <div><p class="font-bold text-slate-950 dark:text-white">Platform Engineering Brasil</p><p class="mt-3 max-w-md text-sm leading-6 text-slate-600 dark:text-slate-400">Conhecimento técnico, aberto e em português para quem constrói e opera plataformas.</p></div>
+    <div><p class="text-sm font-semibold text-slate-950 dark:text-white">Explore</p><ul class="mt-3 space-y-2 text-sm text-slate-600 dark:text-slate-400"><li><a href="/comece-aqui/" class="hover:text-sky-600">Comece aqui</a></li><li><a href="/artigos/" class="hover:text-sky-600">Artigos</a></li><li><a href="/assuntos/" class="hover:text-sky-600">Assuntos</a></li><li><a href="/guias/" class="hover:text-sky-600">Guias</a></li><li><a href="/ferramentas/" class="hover:text-sky-600">Ferramentas</a></li><li><a href="/rss.xml" class="hover:text-sky-600">RSS</a></li></ul></div>
+    <div><p class="text-sm font-semibold text-slate-950 dark:text-white">Projeto</p><ul class="mt-3 space-y-2 text-sm text-slate-600 dark:text-slate-400"><li><a href="/sobre/" class="hover:text-sky-600">Sobre</a></li><li><a href="/politica-editorial/" class="hover:text-sky-600">Política editorial</a></li><li><a href={SITE.social.github} class="hover:text-sky-600">GitHub</a></li><li><a href="/newsletter/" class="hover:text-sky-600">Newsletter</a></li></ul></div>
+  </div>
+  <div class="container-shell border-t border-slate-200 py-5 text-xs text-slate-500 dark:border-slate-800">© {new Date().getFullYear()} Platform Engineering Brasil. Conteúdo para a comunidade.</div>
+</footer>

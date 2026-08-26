@@ -1,0 +1,5 @@
+---
+import { getCollection } from 'astro:content'; import BaseLayout from '../../layouts/BaseLayout.astro'; import Breadcrumb from '../../components/Breadcrumb.astro';
+const articles = await getCollection('articles', ({data}) => !data.draft); const tags = [...new Set(articles.flatMap((article) => article.data.tags))].map((tag) => ({tag,count:articles.filter((article) => article.data.tags.includes(tag)).length})).sort((a,b) => b.count-a.count || a.tag.localeCompare(b.tag));
+---
+<BaseLayout title="Assuntos" description="Índice de assuntos técnicos publicados no Platform Engineering Brasil."><div class="container-shell py-14"><Breadcrumb items={[{label:'Início',href:'/'},{label:'Assuntos'}]} /><header class="mt-10"><p class="eyebrow">Índice</p><h1 class="mt-3 text-4xl font-black text-slate-950 dark:text-white sm:text-5xl">Todos os assuntos</h1></header><div class="mt-10 flex max-w-4xl flex-wrap gap-3">{tags.map(({tag,count}) => <a href={`/tags/${tag}/`} class="surface px-4 py-3 font-mono text-sm hover:border-sky-400 hover:text-sky-700 dark:hover:text-sky-400">#{tag} <span class="text-slate-400">{count}</span></a>)}</div></div></BaseLayout>

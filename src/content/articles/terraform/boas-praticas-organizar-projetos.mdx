@@ -1,0 +1,71 @@
+---
+title: "Terraform: boas práticas para organizar projetos"
+description: "Estruture módulos, estados e ambientes Terraform para manter mudanças previsíveis, revisáveis e seguras."
+publishedAt: 2026-08-04
+updatedAt: 2026-08-04
+author: "Platform Engineering Brasil"
+category: "Terraform"
+tags: [terraform, iac, cloud]
+draft: false
+featured: true
+level: Intermediário
+prerequisites:
+  - Sintaxe básica de Terraform
+objectives:
+  - Separar infraestrutura por ciclo de vida
+  - Projetar módulos com contratos pequenos
+  - Proteger estado e revisar mudanças
+sources:
+  - title: "HashiCorp — Terraform Style Guide"
+    url: "https://developer.hashicorp.com/terraform/language/style"
+revisionNotes: []
+---
+Uma estrutura Terraform saudável reduz o raio de impacto, deixa ownership claro e torna o plano compreensível. Não existe uma árvore universal, mas há princípios que escalam melhor que um único estado para toda a empresa.
+
+## Separe por ciclo de vida
+
+Recursos que mudam e falham juntos podem compartilhar um root module. Rede base, clusters e aplicações costumam ter ciclos e responsáveis diferentes; estados separados reduzem lock e raio de impacto.
+
+```text
+infra/
+├── modules/
+│   ├── network/
+│   └── kubernetes-cluster/
+└── live/
+    ├── development/
+    │   ├── network/
+    │   └── cluster/
+    └── production/
+        ├── network/
+        └── cluster/
+```
+
+## Módulos devem ter contratos pequenos
+
+Um módulo útil encapsula uma capacidade coerente. Evite dezenas de flags que transformam o módulo em vários produtos escondidos. Tipos, descrições e validações tornam entradas explícitas.
+
+```hcl
+variable "environment" {
+  type        = string
+  description = "Nome curto do ambiente."
+
+  validation {
+    condition     = contains(["dev", "stg", "prod"], var.environment)
+    error_message = "Use dev, stg ou prod."
+  }
+}
+```
+
+## Proteja e isole o estado
+
+Use backend remoto com criptografia, controle de acesso, versionamento e locking quando disponível. Nunca publique state: ele pode conter dados sensíveis mesmo quando o código não contém secrets.
+
+## Fixe versões conscientemente
+
+Declare versões do Terraform e dos providers. Atualize por pull requests dedicados, revise o changelog e inspecione o plano.
+
+## Automatize a revisão
+
+No CI, execute formatação, validação e plano. O apply de produção deve partir de código revisado, com identidade curta e auditável. Um bom pipeline apresenta o plano sem expor valores sensíveis.
+
+Organização é uma ferramenta para limitar complexidade. Comece simples, separe quando houver diferença real de ciclo de vida e registre as decisões que não forem óbvias.

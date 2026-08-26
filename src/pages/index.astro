@@ -1,0 +1,25 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ArticleCard from '../components/ArticleCard.astro';
+import CategoryCard from '../components/CategoryCard.astro';
+import ToolCard from '../components/ToolCard.astro';
+import NewsletterCTA from '../components/NewsletterCTA.astro';
+import { CATEGORIES, SITE } from '../config/site';
+import { byNewest } from '../utils/content';
+const articles = (await getCollection('articles', ({ data }) => !data.draft)).sort(byNewest);
+const featured = articles.filter((article) => article.data.featured).slice(0, 2);
+const counts = Object.fromEntries(CATEGORIES.map((category) => [category, articles.filter((article) => article.data.category === category).length]));
+const websiteSchema = { '@context': 'https://schema.org', '@type': 'WebSite', name: SITE.name, url: SITE.url, description: SITE.description, inLanguage: SITE.language, potentialAction: { '@type': 'SearchAction', target: `${SITE.url}/busca/?q={search_term_string}`, 'query-input': 'required name=search_term_string' } };
+---
+<BaseLayout schema={websiteSchema}>
+  <section class="relative overflow-hidden border-b border-slate-200 dark:border-slate-800">
+    <div aria-hidden="true" class="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(14,165,233,.12),transparent_32%),radial-gradient(circle_at_15%_75%,rgba(45,212,191,.08),transparent_28%)]"></div>
+    <div class="container-shell relative py-20 sm:py-28 lg:py-32"><p class="eyebrow">Platform Engineering Brasil</p><h1 class="mt-5 max-w-5xl text-5xl font-black leading-[1.02] tracking-[-0.045em] text-slate-950 dark:text-white sm:text-6xl lg:text-7xl">Conteúdo técnico para<br/><span class="bg-gradient-to-r from-sky-600 to-teal-500 bg-clip-text text-transparent">construir e operar plataformas.</span></h1><p class="mt-7 max-w-2xl text-lg leading-8 text-slate-600 dark:text-slate-300">{SITE.description}</p><div class="mt-9 flex flex-wrap gap-3"><a href="/artigos/" class="rounded-lg bg-slate-950 px-5 py-3 text-sm font-semibold text-white hover:bg-sky-700 dark:bg-white dark:text-slate-950 dark:hover:bg-sky-300">Explorar artigos</a><a href="/roadmap/platform-engineer/" class="rounded-lg border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:border-sky-400 dark:border-slate-700 dark:bg-ink-900 dark:text-slate-200">Ver roadmap</a></div></div>
+  </section>
+  <section class="container-shell py-20"><div class="flex items-end justify-between gap-5"><div><p class="eyebrow">Atualizações</p><h2 class="mt-3 text-3xl font-bold tracking-tight text-slate-950 dark:text-white">Artigos recentes</h2></div><a href="/artigos/" class="hidden text-sm font-semibold text-sky-700 hover:underline dark:text-sky-400 sm:block">Ver todos →</a></div><div class="mt-8 grid gap-5 md:grid-cols-3">{articles.slice(0, 3).map((article) => <ArticleCard article={article} />)}</div></section>
+  <section class="border-y border-slate-200 bg-white py-20 dark:border-slate-800 dark:bg-ink-900"><div class="container-shell"><p class="eyebrow">Seleção editorial</p><h2 class="mt-3 text-3xl font-bold tracking-tight text-slate-950 dark:text-white">Conteúdos em destaque</h2><div class="mt-8 grid gap-5 md:grid-cols-2">{featured.map((article) => <ArticleCard article={article} featured />)}</div></div></section>
+  <section class="container-shell py-20"><p class="eyebrow">Explore por tema</p><h2 class="mt-3 text-3xl font-bold tracking-tight text-slate-950 dark:text-white">Categorias</h2><div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{CATEGORIES.map((category) => <CategoryCard name={category} count={counts[category]} />)}</div></section>
+  <section class="container-shell grid gap-12 pb-20 lg:grid-cols-2"><div><p class="eyebrow">Aprendizado estruturado</p><h2 class="mt-3 text-3xl font-bold text-slate-950 dark:text-white">Guias</h2><div class="surface mt-7 p-7"><p class="font-mono text-xs text-teal-700 dark:text-teal-400">GUIA ESSENCIAL</p><h3 class="mt-3 text-xl font-bold text-slate-950 dark:text-white">Fundamentos de Platform Engineering</h3><p class="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-400">Uma sequência curada para entender plataformas internas, golden paths e experiência de desenvolvimento.</p><a href="/guias/" class="mt-5 inline-block text-sm font-semibold text-sky-700 dark:text-sky-400">Começar guia →</a></div></div><div><p class="eyebrow">Utilitários locais</p><h2 class="mt-3 text-3xl font-bold text-slate-950 dark:text-white">Ferramentas</h2><div class="mt-7"><ToolCard title="Base64 Encoder / Decoder" description="Codifique e decodifique texto localmente no navegador, com suporte correto a Unicode." href="/ferramentas/base64/" status="disponível" /></div></div></section>
+  <div class="container-shell"><NewsletterCTA /></div>
+</BaseLayout>

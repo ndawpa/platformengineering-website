@@ -1,0 +1,78 @@
+---
+title: "O que é Platform Engineering?"
+description: "Entenda como plataformas internas reduzem a carga cognitiva e criam caminhos seguros para entregar software."
+publishedAt: 2026-08-20
+updatedAt: 2026-08-25
+author: "Platform Engineering Brasil"
+category: "Platform Engineering"
+tags: [platform-engineering, idp, developer-experience]
+draft: false
+featured: true
+level: Iniciante
+prerequisites: []
+objectives:
+  - Entender o propósito de uma plataforma interna
+  - Diferenciar plataforma de portal e automação isolada
+  - Identificar um ponto de partida sustentável
+series: "Fundamentos de Platform Engineering"
+seriesOrder: 1
+sources:
+  - title: "CNCF Platforms Working Group — Platforms White Paper"
+    url: "https://tag-app-delivery.cncf.io/whitepapers/platforms/"
+revisionNotes:
+  - date: 2026-08-25
+    note: "Exemplos e definição de golden paths revisados."
+---
+import Callout from '../../../components/Callout.astro';
+
+Platform Engineering é a disciplina de projetar e evoluir **plataformas internas como produtos**. Essas plataformas oferecem capacidades reutilizáveis — provisionamento, deploy, observabilidade, segurança — por meio de caminhos simples e bem documentados.
+
+O objetivo não é esconder toda a infraestrutura. É permitir que times de produto tomem decisões com autonomia, dentro de limites seguros, sem precisar dominar cada detalhe do ecossistema operacional.
+
+## O problema que a plataforma resolve
+
+Quando cada equipe precisa montar seu próprio pipeline, políticas de acesso, dashboards e módulos de infraestrutura, a autonomia vira repetição. A organização acumula dezenas de implementações ligeiramente diferentes, difíceis de manter e auditar.
+
+Uma boa plataforma transforma conhecimento operacional em uma experiência consistente:
+
+- templates de serviços com padrões organizacionais;
+- ambientes criados sob demanda;
+- pipelines com segurança e qualidade incorporadas;
+- observabilidade disponível desde o primeiro deploy;
+- documentação próxima da ação.
+
+<Callout type="tip" title="Plataforma é produto">
+  O time de plataforma deve pesquisar necessidades, medir adoção e manter um roadmap. Um portal isolado, sem capacidades úteis por trás dele, não é uma plataforma.
+</Callout>
+
+## Golden paths sem aprisionamento
+
+Um *golden path* é o caminho recomendado para uma tarefa frequente. Ele reúne escolhas que funcionam bem na maioria dos casos. Deve ser fácil de adotar e possível de abandonar quando o contexto justificar.
+
+Por exemplo, a criação de uma API pode gerar repositório, pipeline, manifesto de deploy, dashboard e alertas básicos. A equipe continua dona do serviço, enquanto a plataforma mantém as fundações comuns.
+
+## Componentes de uma plataforma interna
+
+### Interfaces
+
+CLI, APIs, portal e documentação são portas de entrada. A melhor interface depende da tarefa: automação usa APIs; descoberta pode funcionar melhor em um catálogo; operações rápidas favorecem a CLI.
+
+### Capacidades
+
+As capacidades conectam os fluxos a Kubernetes, cloud, CI/CD, secrets, observabilidade e outros sistemas. Elas devem ter contratos estáveis e feedback claro quando algo falha.
+
+### Governança
+
+Políticas como código, identidade, auditoria e limites de custo criam autonomia responsável. Guardrails eficazes aparecem no fluxo de trabalho e explicam como corrigir violações.
+
+## Como começar
+
+Comece por uma jornada real e dolorosa, não pela compra de uma ferramenta. Entreviste desenvolvedores, mapeie o fluxo atual e escolha uma métrica de resultado, como tempo para criar um ambiente ou taxa de sucesso de deploy.
+
+1. Identifique um gargalo recorrente.
+2. Defina quem é o usuário e qual resultado ele busca.
+3. Entregue o menor caminho completo possível.
+4. Observe uso, falhas e abandono.
+5. Evolua com base em evidências.
+
+Platform Engineering funciona quando reduz a distância entre a intenção do desenvolvedor e uma operação confiável em produção.

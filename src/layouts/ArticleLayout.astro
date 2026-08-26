@@ -1,0 +1,43 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import Breadcrumb from '../components/Breadcrumb.astro';
+import TableOfContents from '../components/TableOfContents.astro';
+import RelatedArticles from '../components/RelatedArticles.astro';
+import type { Article } from '../utils/content';
+import { articlePath, formatDate, readingTime } from '../utils/content';
+import { SITE } from '../config/site';
+interface Props { article: Article; headings: import('astro').MarkdownHeading[]; related: Article[]; previous?: Article; next?: Article; }
+const { article, headings, related, previous, next } = Astro.props;
+const minutes = readingTime(article.body);
+const path = articlePath(article);
+const schema = { '@context': 'https://schema.org', '@type': 'Article', headline: article.data.title, description: article.data.description, datePublished: article.data.publishedAt.toISOString(), dateModified: article.data.updatedAt.toISOString(), author: { '@type': 'Organization', name: article.data.author }, publisher: { '@type': 'Organization', name: SITE.name, url: SITE.url }, mainEntityOfPage: new URL(path, SITE.url).href, inLanguage: SITE.language };
+---
+<BaseLayout title={article.data.title} description={article.data.description} image={`/og/${article.id}.png`} type="article" schema={schema}>
+  <div class="container-shell py-10 lg:py-14">
+    <Breadcrumb items={[{ label: 'Início', href: '/' }, { label: 'Artigos', href: '/artigos/' }, { label: article.data.category, href: `/categorias/${article.data.category.toLowerCase().replaceAll(' ', '-').replace('/', '-')}/` }, { label: article.data.title }]} />
+    <div class="mt-10 grid gap-12 lg:grid-cols-[minmax(0,1fr)_270px]">
+      <article class="min-w-0">
+        <header class="border-b border-slate-200 pb-9 dark:border-slate-800"><div class="flex flex-wrap items-center gap-3"><p class="eyebrow">{article.data.category}</p><span class="rounded-full border border-slate-300 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:border-slate-700">{article.data.level}</span></div><h1 class="mt-4 max-w-4xl text-4xl font-black leading-[1.1] tracking-tight text-slate-950 dark:text-white sm:text-5xl">{article.data.title}</h1><p class="mt-5 max-w-3xl text-lg leading-8 text-slate-600 dark:text-slate-300">{article.data.description}</p><div class="mt-7 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-slate-500 dark:text-slate-400"><span>Por <a href="/autores/platform-engineering-brasil/" class="font-medium text-slate-700 hover:text-sky-700 dark:text-slate-200 dark:hover:text-sky-400">{article.data.author}</a></span><span aria-hidden="true">·</span><time datetime={article.data.publishedAt.toISOString()}>Publicado em {formatDate(article.data.publishedAt)}</time><span aria-hidden="true">·</span><span>{minutes} min de leitura</span></div>{article.data.updatedAt.valueOf() !== article.data.publishedAt.valueOf() && <p class="mt-2 text-xs text-slate-400">Atualizado em <time datetime={article.data.updatedAt.toISOString()}>{formatDate(article.data.updatedAt)}</time></p>}<div class="mt-5 flex flex-wrap gap-2">{article.data.tags.map((tag) => <a href={`/tags/${tag}/`} class="rounded-md bg-slate-100 px-2.5 py-1 font-mono text-xs text-slate-500 hover:text-sky-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:text-sky-400">#{tag}</a>)}</div></header>
+        {(article.data.objectives.length > 0 || article.data.prerequisites.length > 0) && <aside class="my-9 grid gap-6 rounded-2xl border border-sky-200 bg-sky-50/70 p-6 dark:border-sky-900 dark:bg-sky-950/20 sm:grid-cols-2">{article.data.objectives.length > 0 && <div><h2 class="font-semibold text-slate-950 dark:text-white">Você vai aprender</h2><ul class="mt-3 space-y-2 text-sm leading-6 text-slate-600 dark:text-slate-300">{article.data.objectives.map((item) => <li class="flex gap-2"><span class="text-teal-600" aria-hidden="true">✓</span>{item}</li>)}</ul></div>}{article.data.prerequisites.length > 0 && <div><h2 class="font-semibold text-slate-950 dark:text-white">Pré-requisitos</h2><ul class="mt-3 space-y-2 text-sm leading-6 text-slate-600 dark:text-slate-300">{article.data.prerequisites.map((item) => <li class="flex gap-2"><span class="text-sky-600" aria-hidden="true">→</span>{item}</li>)}</ul></div>}</aside>}
+        <div class="prose-tech mt-10 max-w-3xl"><slot /></div>
+        {article.data.sources.length > 0 && <section class="mt-14 max-w-3xl border-t border-slate-200 pt-9 dark:border-slate-800"><h2 class="text-xl font-bold text-slate-950 dark:text-white">Fontes e referências</h2><ol class="mt-4 space-y-3 text-sm">{article.data.sources.map((source) => <li><a href={source.url} rel="noopener noreferrer" class="text-sky-700 hover:underline dark:text-sky-400">{source.title} ↗</a></li>)}</ol></section>}
+        {article.data.revisionNotes.length > 0 && <details class="mt-9 max-w-3xl rounded-xl border border-slate-200 p-5 dark:border-slate-800"><summary class="cursor-pointer font-semibold text-slate-950 dark:text-white">Histórico de revisões</summary><ul class="mt-4 space-y-3 text-sm text-slate-600 dark:text-slate-400">{article.data.revisionNotes.map((revision) => <li><time datetime={revision.date.toISOString()}>{formatDate(revision.date)}</time> — {revision.note}</li>)}</ul></details>}
+        <div class="mt-9 flex flex-wrap gap-4 text-sm"><a href={`${SITE.contentRepository}/edit/main/src/content/articles/${article.id}.mdx`} class="font-semibold text-slate-600 hover:text-sky-700 dark:text-slate-400 dark:hover:text-sky-400">Sugerir uma correção no GitHub ↗</a><a href="/politica-editorial/" class="font-semibold text-slate-600 hover:text-sky-700 dark:text-slate-400 dark:hover:text-sky-400">Política editorial</a></div>
+        {(previous || next) && <nav aria-label="Navegação da série" class="mt-12 grid gap-4 border-y border-slate-200 py-7 dark:border-slate-800 sm:grid-cols-2">{previous ? <a href={articlePath(previous)} class="surface p-5 text-sm"><span class="text-slate-400">← Anterior</span><strong class="mt-2 block text-slate-950 dark:text-white">{previous.data.title}</strong></a> : <span />}{next && <a href={articlePath(next)} class="surface p-5 text-right text-sm"><span class="text-slate-400">Próximo →</span><strong class="mt-2 block text-slate-950 dark:text-white">{next.data.title}</strong></a>}</nav>}
+        <RelatedArticles articles={related} />
+      </article>
+      <aside class="order-first lg:order-last"><div class="lg:sticky lg:top-24"><TableOfContents headings={headings} /></div></aside>
+    </div>
+  </div>
+  <script>
+    document.querySelectorAll('.prose-tech h2[id], .prose-tech h3[id]').forEach((heading) => {
+      const anchor = document.createElement('a');
+      anchor.href = `#${heading.id}`; anchor.className = 'heading-anchor'; anchor.setAttribute('aria-label', `Link para ${heading.textContent}`); anchor.textContent = '#'; heading.append(anchor);
+    });
+    document.querySelectorAll('.prose-tech pre').forEach((pre) => {
+      const wrapper = document.createElement('div'); wrapper.className = 'relative'; pre.parentNode?.insertBefore(wrapper, pre); wrapper.append(pre);
+      const button = document.createElement('button'); button.type = 'button'; button.className = 'absolute right-3 top-3 rounded-md border border-slate-600 bg-slate-800 px-2.5 py-1 text-xs text-slate-200 hover:bg-slate-700'; button.textContent = 'Copiar'; button.setAttribute('aria-label', 'Copiar código');
+      button.addEventListener('click', async () => { await navigator.clipboard.writeText(pre.textContent ?? ''); button.textContent = 'Copiado!'; setTimeout(() => { button.textContent = 'Copiar'; }, 1600); }); wrapper.append(button);
+    });
+  </script>
+</BaseLayout>

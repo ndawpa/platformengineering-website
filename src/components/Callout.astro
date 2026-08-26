@@ -1,0 +1,6 @@
+---
+interface Props { title?: string; type?: 'info' | 'warning' | 'tip'; }
+const { title = 'Nota', type = 'info' } = Astro.props;
+const styles = { info: 'border-sky-400 bg-sky-50 dark:bg-sky-950/30', warning: 'border-amber-400 bg-amber-50 dark:bg-amber-950/30', tip: 'border-teal-400 bg-teal-50 dark:bg-teal-950/30' };
+---
+<aside class:list={['my-8 rounded-r-xl border-l-4 px-6 py-4', styles[type]]}><p class="m-0! text-sm font-bold text-slate-950 dark:text-white">{title}</p><div class="[&>*:last-child]:mb-0! [&>*:first-child]:mt-2!"><slot /></div></aside>

@@ -1,0 +1,17 @@
+---
+import { getCollection, render } from 'astro:content';
+import ArticleLayout from '../../layouts/ArticleLayout.astro';
+import { byNewest } from '../../utils/content';
+export async function getStaticPaths() {
+  const articles = await getCollection('articles', ({ data }) => !data.draft);
+  return Promise.all(articles.map(async (article) => {
+    const { Content, headings } = await render(article);
+    const related = articles.filter((candidate) => candidate.id !== article.id).map((candidate) => ({ candidate, score: (candidate.data.category === article.data.category ? 3 : 0) + candidate.data.tags.filter((tag) => article.data.tags.includes(tag)).length })).filter(({ score }) => score > 0).sort((a, b) => b.score - a.score || byNewest(a.candidate, b.candidate)).slice(0, 2).map(({ candidate }) => candidate);
+    const series = article.data.series ? articles.filter((candidate) => candidate.data.series === article.data.series).sort((a, b) => (a.data.seriesOrder ?? 0) - (b.data.seriesOrder ?? 0)) : [];
+    const position = series.findIndex((candidate) => candidate.id === article.id);
+    return { params: { id: article.id }, props: { article, Content, headings, related, previous: position > 0 ? series[position - 1] : undefined, next: position >= 0 ? series[position + 1] : undefined } };
+  }));
+}
+const { article, Content, headings, related, previous, next } = Astro.props;
+---
+<ArticleLayout article={article} headings={headings} related={related} previous={previous} next={next}><Content /></ArticleLayout>

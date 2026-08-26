@@ -1,0 +1,21 @@
+---
+import type { Article } from '../utils/content';
+import { articlePath } from '../utils/content';
+interface Props { articles: Article[]; }
+const { articles } = Astro.props;
+const index = articles.map((article) => ({ title: article.data.title, description: article.data.description, category: article.data.category, tags: article.data.tags, href: articlePath(article) }));
+---
+<div class="max-w-3xl">
+  <label for="search-input" class="sr-only">Buscar artigos</label>
+  <div class="relative"><svg class="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-slate-400" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="search-input" type="search" autocomplete="off" class="w-full rounded-xl border border-slate-300 bg-white py-4 pl-12 pr-4 text-base shadow-sm focus:border-sky-500 dark:border-slate-700 dark:bg-ink-900" placeholder="Busque por título, categoria ou tag…" /></div>
+  <p id="search-status" class="mt-4 text-sm text-slate-500" aria-live="polite">Digite pelo menos 2 caracteres.</p>
+  <div id="search-results" class="mt-6 space-y-3"></div>
+</div>
+<script is:inline type="application/json" id="search-data" set:html={JSON.stringify(index)} />
+<script>
+  interface SearchItem { title: string; description: string; category: string; tags: string[]; href: string; }
+  const input = document.querySelector<HTMLInputElement>('#search-input')!; const results = document.querySelector('#search-results')!; const status = document.querySelector('#search-status')!; const data: SearchItem[] = JSON.parse(document.querySelector('#search-data')?.textContent ?? '[]');
+  const normalize = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  const render = () => { const query = normalize(input.value.trim()); results.replaceChildren(); if (query.length < 2) { status.textContent = 'Digite pelo menos 2 caracteres.'; return; } const matches = data.filter((item) => normalize(`${item.title} ${item.description} ${item.category} ${item.tags.join(' ')}`).includes(query)); status.textContent = `${matches.length} ${matches.length === 1 ? 'resultado encontrado' : 'resultados encontrados'}.`; matches.forEach((item) => { const article = document.createElement('article'); article.className = 'surface p-5'; const link = document.createElement('a'); link.href = item.href; link.className = 'font-bold text-slate-950 hover:text-sky-700 dark:text-white dark:hover:text-sky-400'; link.textContent = item.title; const meta = document.createElement('p'); meta.className = 'mt-2 text-xs font-mono uppercase tracking-wider text-sky-700 dark:text-sky-400'; meta.textContent = item.category; const description = document.createElement('p'); description.className = 'mt-2 text-sm leading-6 text-slate-600 dark:text-slate-400'; description.textContent = item.description; article.append(link, meta, description); results.append(article); }); };
+  let timer = 0; input.addEventListener('input', () => { window.clearTimeout(timer); timer = window.setTimeout(render, 100); }); const initial = new URLSearchParams(location.search).get('q'); if (initial) { input.value = initial; render(); }
+</script>

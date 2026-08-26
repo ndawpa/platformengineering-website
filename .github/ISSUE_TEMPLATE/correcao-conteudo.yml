@@ -1,0 +1,21 @@
+name: Correção de conteúdo
+description: Reporte informação desatualizada, comando incorreto ou problema editorial.
+title: "[conteúdo] "
+labels: [conteúdo]
+body:
+  - type: input
+    id: url
+    attributes:
+      label: URL do conteúdo
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: O que precisa ser corrigido?
+    validations:
+      required: true
+  - type: textarea
+    id: source
+    attributes:
+      label: Fonte ou evidência

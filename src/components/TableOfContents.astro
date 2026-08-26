@@ -1,0 +1,10 @@
+---
+import type { MarkdownHeading } from 'astro';
+interface Props { headings: MarkdownHeading[]; }
+const { headings } = Astro.props;
+const visible = headings.filter((heading) => heading.depth === 2 || heading.depth === 3);
+---
+{visible.length > 0 && <nav aria-label="Índice do artigo" class="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-ink-900">
+  <p class="font-mono text-xs font-semibold uppercase tracking-wider text-slate-500">Neste artigo</p>
+  <ol class="mt-4 space-y-2.5 text-sm">{visible.map((heading) => <li class:list={[heading.depth === 3 && 'pl-4']}><a href={`#${heading.slug}`} class="leading-5 text-slate-600 hover:text-sky-700 dark:text-slate-400 dark:hover:text-sky-400">{heading.text}</a></li>)}</ol>
+</nav>}

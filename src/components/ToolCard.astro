@@ -1,0 +1,9 @@
+---
+interface Props { title: string; description: string; href?: string; status?: string; }
+const { title, description, href, status } = Astro.props;
+const Tag = href ? 'a' : 'div';
+---
+<Tag href={href} class:list={['surface block p-6', href && 'group transition hover:border-teal-300 hover:shadow-md dark:hover:border-teal-800', !href && 'opacity-70']}>
+  <div class="flex items-start justify-between gap-3"><h3 class="font-bold text-slate-950 group-hover:text-teal-700 dark:text-white dark:group-hover:text-teal-400">{title}</h3>{status && <span class="rounded-full bg-slate-100 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-slate-500 dark:bg-slate-800">{status}</span>}</div>
+  <p class="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-400">{description}</p>
+</Tag>

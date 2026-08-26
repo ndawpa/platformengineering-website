@@ -1,0 +1,54 @@
+---
+title: "Platform Engineering vs DevOps vs SRE"
+description: "Compare responsabilidades, práticas e objetivos de Platform Engineering, DevOps e Site Reliability Engineering."
+publishedAt: 2026-08-16
+updatedAt: 2026-08-16
+author: "Platform Engineering Brasil"
+category: "Platform Engineering"
+tags: [platform-engineering, devops, sre]
+draft: false
+featured: true
+level: Iniciante
+prerequisites:
+  - Conceitos básicos de entrega e operação de software
+objectives:
+  - Comparar o foco das três disciplinas
+  - Entender como elas podem coexistir
+series: "Fundamentos de Platform Engineering"
+seriesOrder: 2
+sources:
+  - title: "Google — Site Reliability Engineering"
+    url: "https://sre.google/books/"
+revisionNotes: []
+---
+DevOps, SRE e Platform Engineering não são três nomes para o mesmo time. Eles operam em camadas diferentes e podem coexistir na mesma organização.
+
+## Comparação rápida
+
+| Disciplina | Foco principal | Mecanismo típico |
+|---|---|---|
+| DevOps | Melhorar colaboração e fluxo de entrega | Cultura e práticas |
+| SRE | Equilibrar confiabilidade e velocidade | SLOs, error budgets e automação |
+| Platform Engineering | Reduzir complexidade para times de produto | Plataforma interna como produto |
+
+## DevOps: princípios para o fluxo inteiro
+
+DevOps aproxima desenvolvimento e operações por responsabilidade compartilhada, feedback rápido e automação. Não prescreve uma estrutura organizacional única nem exige um “time DevOps”.
+
+Quando o cargo de DevOps vira apenas a pessoa que recebe todos os tickets de infraestrutura, o gargalo muda de lugar, mas continua existindo.
+
+## SRE: confiabilidade com objetivos explícitos
+
+SRE aplica engenharia de software a problemas operacionais. Indicadores de nível de serviço (SLIs), objetivos (SLOs) e orçamentos de erro ajudam a decidir quanto risco aceitar.
+
+Um time de SRE pode operar serviços críticos, criar padrões de confiabilidade e colaborar em incidentes. Seu sucesso não é “zero incidentes”, mas risco conhecido e resposta sustentável.
+
+## Platform Engineering: capacidades consumíveis
+
+Platform Engineering codifica padrões da organização em serviços reutilizáveis. Seu cliente é o desenvolvedor interno e sua métrica deve refletir resultados desse usuário, não apenas disponibilidade da plataforma.
+
+## Como as disciplinas trabalham juntas
+
+DevOps fornece princípios. SRE aprofunda a engenharia de confiabilidade. Platform Engineering distribui capacidades comuns em escala. Uma plataforma pode, por exemplo, oferecer templates com SLOs, telemetria e pipelines seguros já configurados.
+
+O desenho correto depende do contexto. Organizações pequenas podem aplicar as três perspectivas sem criar três times separados.

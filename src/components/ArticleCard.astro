@@ -1,0 +1,12 @@
+---
+import type { Article } from '../utils/content';
+import { articlePath, formatDate } from '../utils/content';
+interface Props { article: Article; featured?: boolean; }
+const { article, featured = false } = Astro.props;
+---
+<article class:list={['group surface flex h-full flex-col p-6 transition hover:-translate-y-0.5 hover:border-sky-300 hover:shadow-lg dark:hover:border-sky-800', featured && 'md:p-8']}>
+  <div class="flex flex-wrap items-center gap-3 text-xs"><a href={`/categorias/${article.data.category.toLowerCase().replaceAll(' ', '-').replace('/', '-')}/`} class="font-mono font-semibold uppercase tracking-wider text-sky-700 dark:text-sky-400">{article.data.category}</a><span class="text-slate-400">{formatDate(article.data.publishedAt)}</span><span class="rounded-full border border-slate-200 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:border-slate-700">{article.data.level}</span></div>
+  <h2 class:list={['mt-4 font-bold leading-tight tracking-tight text-slate-950 group-hover:text-sky-700 dark:text-white dark:group-hover:text-sky-400', featured ? 'text-2xl' : 'text-xl']}><a href={articlePath(article)}>{article.data.title}</a></h2>
+  <p class="mt-3 flex-1 text-sm leading-6 text-slate-600 dark:text-slate-400">{article.data.description}</p>
+  <div class="mt-5 flex flex-wrap gap-2">{article.data.tags.slice(0, 3).map((tag) => <span class="rounded-md bg-slate-100 px-2 py-1 font-mono text-[11px] text-slate-500 dark:bg-slate-800 dark:text-slate-400">#{tag}</span>)}</div>
+</article>

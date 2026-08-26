@@ -1,0 +1,5 @@
+---
+interface Props { language?: string; }
+const { language = 'text' } = Astro.props;
+---
+<div class="my-8 overflow-hidden rounded-xl border border-slate-700 bg-[#0d1117]"><div class="border-b border-slate-700 px-4 py-2 font-mono text-xs text-slate-400">{language}</div><pre class="m-0! overflow-x-auto border-0! p-5"><code><slot /></code></pre></div>

@@ -1,0 +1,5 @@
+---
+import { getCollection } from 'astro:content'; import BaseLayout from '../../layouts/BaseLayout.astro'; import Breadcrumb from '../../components/Breadcrumb.astro'; import Search from '../../components/Search.astro';
+const articles = await getCollection('articles', ({ data }) => !data.draft);
+---
+<BaseLayout title="Busca" description="Busque no conteúdo do Platform Engineering Brasil."><div class="container-shell py-14"><Breadcrumb items={[{ label: 'Início', href: '/' }, { label: 'Busca' }]} /><header class="mt-10"><p class="eyebrow">Busca local</p><h1 class="mt-3 text-4xl font-black text-slate-950 dark:text-white sm:text-5xl">Encontre um conteúdo</h1><p class="mt-4 text-slate-600 dark:text-slate-300">A busca acontece inteiramente no navegador.</p></header><div class="mt-9"><Search articles={articles} /></div></div></BaseLayout>

@@ -1,0 +1,12 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+import ArticleCard from '../../components/ArticleCard.astro';
+import { CATEGORIES } from '../../config/site';
+import { byNewest } from '../../utils/content';
+export async function getStaticPaths() { return CATEGORIES.map((category) => ({ params: { categoria: category.toLowerCase().replaceAll(' ', '-').replace('/', '-') }, props: { category } })); }
+const { category } = Astro.props;
+const articles = (await getCollection('articles', ({ data }) => !data.draft && data.category === category)).sort(byNewest);
+---
+<BaseLayout title={category} description={`Artigos, guias e recursos sobre ${category}.`}><div class="container-shell py-14"><Breadcrumb items={[{ label: 'Início', href: '/' }, { label: 'Categorias', href: '/artigos/' }, { label: category }]} /><header class="mt-10"><p class="eyebrow">Categoria</p><h1 class="mt-3 text-4xl font-black text-slate-950 dark:text-white sm:text-5xl">{category}</h1><p class="mt-4 text-slate-600 dark:text-slate-300">{articles.length ? `${articles.length} ${articles.length === 1 ? 'conteúdo publicado' : 'conteúdos publicados'}.` : 'Estamos preparando conteúdo técnico para esta categoria.'}</p></header>{articles.length > 0 && <div class="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">{articles.map((article) => <ArticleCard article={article} />)}</div>}</div></BaseLayout>

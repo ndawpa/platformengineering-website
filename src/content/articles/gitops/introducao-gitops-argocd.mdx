@@ -1,0 +1,63 @@
+---
+title: "Introdução ao GitOps com Argo CD"
+description: "Entenda reconciliação, estado desejado e um fluxo inicial seguro para operar aplicações Kubernetes com Argo CD."
+publishedAt: 2026-08-08
+updatedAt: 2026-08-08
+author: "Platform Engineering Brasil"
+category: "GitOps"
+tags: [gitops, argocd, kubernetes]
+draft: false
+featured: false
+level: Intermediário
+prerequisites:
+  - Conceitos básicos de Kubernetes e Git
+objectives:
+  - Entender o ciclo de reconciliação
+  - Criar uma Application mínima
+sources:
+  - title: "Argo CD — Declarative Setup"
+    url: "https://argo-cd.readthedocs.io/en/stable/operator-manual/declarative-setup/"
+revisionNotes: []
+---
+GitOps usa um repositório Git como fonte do estado desejado e um reconciliador para aproximar continuamente o ambiente desse estado. No Kubernetes, Argo CD é uma implementação popular desse modelo.
+
+## O ciclo de reconciliação
+
+O Argo CD compara manifests no Git com recursos no cluster. Uma diferença gera o estado `OutOfSync`. Com sincronização automática, o controller aplica a mudança; sem ela, uma pessoa aprova a operação.
+
+Esse modelo desloca credenciais do pipeline para o cluster e cria uma trilha de auditoria baseada em commits e pull requests.
+
+## Uma Application mínima
+
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: checkout
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/exemplo/gitops.git
+    targetRevision: main
+    path: apps/checkout/overlays/producao
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: checkout
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+```
+
+## Organize o repositório
+
+Separe configuração de aplicação por ambiente e mantenha ownership explícito. Kustomize ou Helm podem reduzir repetição, mas camadas demais tornam a renderização difícil de prever.
+
+## Segurança antes da automação
+
+Restrinja repositórios e destinos com `AppProject`, valide manifests no pull request e proteja o branch reconciliado. `prune` e `selfHeal` são poderosos: habilite-os depois de entender exclusões e alterações manuais existentes.
+
+## O que GitOps não resolve
+
+GitOps não substitui testes, estratégia de rollout, gestão de secrets ou observabilidade. Ele cria um mecanismo consistente de entrega e correção de drift; a qualidade do estado desejado continua sendo responsabilidade do time.

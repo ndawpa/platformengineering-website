@@ -1,0 +1,57 @@
+---
+title: "Roadmap para se tornar Platform Engineer"
+description: "Uma trilha prática para desenvolver fundamentos de sistemas, cloud, automação, confiabilidade e plataformas internas."
+publishedAt: 2026-08-12
+updatedAt: 2026-08-25
+author: "Platform Engineering Brasil"
+category: "Platform Engineering"
+tags: [carreira, roadmap, platform-engineering]
+draft: false
+featured: false
+level: Iniciante
+prerequisites: []
+objectives:
+  - Organizar uma trilha de estudos progressiva
+  - Identificar projetos práticos para consolidar conhecimentos
+series: "Fundamentos de Platform Engineering"
+seriesOrder: 3
+sources: []
+revisionNotes:
+  - date: 2026-08-25
+    note: "Trilha conectada ao roadmap visual."
+---
+Uma carreira em Platform Engineering combina profundidade em sistemas com visão de produto. A ordem importa menos que a prática deliberada, mas fundamentos sólidos evitam que ferramentas virem caixas-pretas.
+
+## Comece pelos fundamentos
+
+Aprenda processos, permissões, sinais, sistema de arquivos e diagnóstico no Linux. Em redes, domine DNS, HTTP, TLS, roteamento, portas e balanceamento. Use Git além do fluxo feliz: rebase, conflitos, bisect e recuperação.
+
+## Containers e orquestração
+
+Entenda namespaces, cgroups, imagens e registries antes de avançar para Kubernetes. No cluster, estude o modelo declarativo, controllers, scheduling, networking, storage e RBAC.
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: hello
+```
+
+## Cloud e infraestrutura como código
+
+Escolha um provedor para aprofundar identidade, rede, compute, storage e custos. Use Terraform ou OpenTofu para praticar estado, módulos, planos e revisão de mudanças.
+
+## Entrega e operação
+
+Construa pipelines, implemente GitOps e instrumente uma aplicação com métricas, logs e traces. Faça exercícios de incidentes e escreva postmortems sem culpabilização.
+
+## Pense como um time de produto
+
+Uma plataforma não é uma coleção de YAML. Aprenda pesquisa com usuários, priorização, documentação, APIs e métricas de adoção. Crie um pequeno golden path completo e peça para outra pessoa usá-lo sem sua ajuda.
+
+Veja a [trilha visual completa](/roadmap/platform-engineer/) e escolha o próximo bloco com base no que você precisa construir agora.
