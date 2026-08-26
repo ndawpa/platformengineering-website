@@ -1,0 +1,9 @@
+services:
+  writer:
+    image: busybox:1.37.0
+    volumes: [data:/data]
+  reader:
+    image: busybox:1.37.0
+    command: ["sleep", "3600"]
+    volumes: [data:/data:ro]
+volumes: { data: {} }

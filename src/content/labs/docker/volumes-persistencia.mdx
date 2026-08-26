@@ -1,0 +1,34 @@
+---
+title: "Volumes Docker e persistência de dados"
+description: "Grave dados em um volume nomeado, recrie containers e diferencie ciclo de vida do processo e do armazenamento."
+category: "Docker"
+level: "Iniciante"
+duration: 25
+updatedAt: 2026-08-26
+prerequisites: ["Docker com Compose, Git e Make"]
+objectives: ["Criar volumes nomeados", "Montar dados como read-only", "Remover armazenamento conscientemente"]
+tools: ["Docker", "Compose", "Volumes"]
+certifications: []
+testedWith: ["Docker Compose 2.39"]
+repositoryPath: "labs/docker/volumes"
+draft: false
+featured: false
+---
+## Gravar e localizar o volume
+```bash
+git clone https://github.com/ndawpa/platformengineering-website.git
+cd platformengineering-website/labs/docker/volumes
+make setup
+docker volume ls
+make verify
+```
+## Recriar containers sem apagar dados
+```bash
+make recreate
+make verify
+```
+`docker compose down` remove containers e rede, mas preserva o volume. A opção `--volumes` é deliberadamente destrutiva.
+## Limpar
+```bash
+make cleanup
+```

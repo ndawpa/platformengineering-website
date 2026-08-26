@@ -1,0 +1,48 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import BaseLayout from './BaseLayout.astro';
+import Breadcrumb from '../components/Breadcrumb.astro';
+import TableOfContents from '../components/TableOfContents.astro';
+import { SITE } from '../config/site';
+interface Props { lab: CollectionEntry<'labs'>; headings: import('astro').MarkdownHeading[]; }
+const { lab, headings } = Astro.props;
+const sourceUrl = `${SITE.contentRepository}/tree/main/${lab.data.repositoryPath}`;
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'LearningResource',
+  name: lab.data.title,
+  description: lab.data.description,
+  learningResourceType: 'Lab guide',
+  educationalLevel: lab.data.level,
+  timeRequired: `PT${lab.data.duration}M`,
+  inLanguage: SITE.language,
+  provider: { '@type': 'Organization', name: SITE.name, url: SITE.url },
+};
+---
+<BaseLayout title={`Lab: ${lab.data.title}`} description={lab.data.description} schema={schema}>
+  <div class="container-shell py-10 lg:py-14">
+    <Breadcrumb items={[{ label: 'Início', href: '/' }, { label: 'Labs', href: '/labs/' }, { label: lab.data.title }]} />
+    <div class="mt-10 grid gap-12 lg:grid-cols-[minmax(0,1fr)_270px]">
+      <article class="min-w-0">
+        <header class="border-b border-slate-200 pb-9 dark:border-slate-800">
+          <div class="flex flex-wrap items-center gap-3"><p class="eyebrow">Laboratório · {lab.data.category}</p><span class="rounded-full border border-slate-300 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:border-slate-700">{lab.data.level}</span></div>
+          <h1 class="mt-4 max-w-4xl text-4xl font-black leading-[1.1] tracking-tight text-slate-950 dark:text-white sm:text-5xl">{lab.data.title}</h1>
+          <p class="mt-5 max-w-3xl text-lg leading-8 text-slate-600 dark:text-slate-300">{lab.data.description}</p>
+          <div class="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm text-slate-500"><span>{lab.data.duration} minutos</span><span>Execução local</span>{lab.data.certifications.length > 0 && <span>{lab.data.certifications.join(' · ')}{lab.data.certificationDomain && ` — ${lab.data.certificationDomain}`}</span>}{lab.data.testedWith.length > 0 && <span>Testado com {lab.data.testedWith.join(', ')}</span>}</div>
+          <div class="mt-6 flex flex-wrap gap-3"><a href={sourceUrl} class="rounded-lg bg-sky-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-sky-800">Baixar arquivos no GitHub ↗</a><a href="#preparar-o-ambiente" class="rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:border-sky-500 dark:border-slate-700 dark:text-slate-200">Começar o lab</a></div>
+        </header>
+        <aside class="my-9 grid gap-6 rounded-2xl border border-sky-200 bg-sky-50/70 p-6 dark:border-sky-900 dark:bg-sky-950/20 sm:grid-cols-2">
+          <div><h2 class="font-semibold text-slate-950 dark:text-white">Objetivos</h2><ul class="mt-3 space-y-2 text-sm leading-6 text-slate-600 dark:text-slate-300">{lab.data.objectives.map((item) => <li class="flex gap-2"><span class="text-teal-600" aria-hidden="true">✓</span>{item}</li>)}</ul></div>
+          <div><h2 class="font-semibold text-slate-950 dark:text-white">Pré-requisitos</h2><ul class="mt-3 space-y-2 text-sm leading-6 text-slate-600 dark:text-slate-300">{lab.data.prerequisites.map((item) => <li class="flex gap-2"><span class="text-sky-600" aria-hidden="true">→</span>{item}</li>)}</ul></div>
+        </aside>
+        <div class="prose-tech mt-10 max-w-3xl"><slot /></div>
+        <div class="mt-12 border-t border-slate-200 pt-8 text-sm dark:border-slate-800"><a href={`${SITE.contentRepository}/issues/new?title=${encodeURIComponent(`Lab: ${lab.data.title}`)}`} class="font-semibold text-slate-600 hover:text-sky-700 dark:text-slate-400 dark:hover:text-sky-400">Reportar problema no laboratório ↗</a></div>
+      </article>
+      <aside class="order-first lg:order-last"><div class="lg:sticky lg:top-24"><TableOfContents headings={headings} /></div></aside>
+    </div>
+  </div>
+  <script>
+    document.querySelectorAll('.prose-tech h2[id], .prose-tech h3[id]').forEach((heading) => { const anchor=document.createElement('a'); anchor.href=`#${heading.id}`; anchor.className='heading-anchor'; anchor.setAttribute('aria-label',`Link para ${heading.textContent}`); anchor.textContent='#'; heading.append(anchor); });
+    document.querySelectorAll('.prose-tech pre').forEach((pre) => { const wrapper=document.createElement('div'); wrapper.className='relative'; pre.parentNode?.insertBefore(wrapper,pre); wrapper.append(pre); const button=document.createElement('button'); button.type='button'; button.className='absolute right-3 top-3 rounded-md border border-slate-600 bg-slate-800 px-2.5 py-1 text-xs text-slate-200 hover:bg-slate-700'; button.textContent='Copiar'; button.setAttribute('aria-label','Copiar código'); button.addEventListener('click',async()=>{await navigator.clipboard.writeText(pre.textContent??'');button.textContent='Copiado!';setTimeout(()=>{button.textContent='Copiar';},1600);});wrapper.append(button); });
+  </script>
+</BaseLayout>

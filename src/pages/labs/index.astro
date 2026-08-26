@@ -1,0 +1,15 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+import LabCard from '../../components/LabCard.astro';
+const labs = (await getCollection('labs', ({ data }) => !data.draft)).sort((a, b) => Number(b.data.featured) - Number(a.data.featured) || a.data.title.localeCompare(b.data.title, 'pt-BR'));
+---
+<BaseLayout title="Laboratórios práticos" description="Laboratórios reproduzíveis de Platform Engineering, Kubernetes, GitOps e infraestrutura para executar localmente.">
+  <div class="container-shell py-14">
+    <Breadcrumb items={[{ label: 'Início', href: '/' }, { label: 'Labs' }]} />
+    <header class="mt-10 max-w-3xl"><p class="eyebrow">Aprender fazendo</p><h1 class="mt-3 text-4xl font-black text-slate-950 dark:text-white sm:text-5xl">Laboratórios práticos</h1><p class="mt-5 text-lg leading-8 text-slate-600 dark:text-slate-300">Ambientes pequenos, reproduzíveis e descartáveis para praticar no seu computador. Cada lab inclui preparação, checkpoints, validação e limpeza.</p></header>
+    <section class="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3" aria-label="Laboratórios disponíveis">{labs.map((lab) => <LabCard title={lab.data.title} description={lab.data.description} href={`/labs/${lab.id}/`} category={lab.data.category} level={lab.data.level} duration={lab.data.duration} tools={lab.data.tools} certifications={lab.data.certifications} />)}</section>
+    <aside class="mt-14 rounded-2xl border border-slate-200 bg-slate-50 p-6 dark:border-slate-800 dark:bg-slate-900/50"><h2 class="text-lg font-bold text-slate-950 dark:text-white">Ambientes interativos estão no horizonte</h2><p class="mt-2 max-w-3xl text-sm leading-6 text-slate-600 dark:text-slate-400">Os labs usam uma estrutura independente do executor. No futuro, o mesmo exercício poderá abrir um ambiente temporário no navegador; por enquanto, toda a prática roda localmente sem cadastro e sem enviar dados.</p></aside>
+  </div>
+</BaseLayout>

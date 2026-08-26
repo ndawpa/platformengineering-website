@@ -1,0 +1,32 @@
+---
+title: "Redes Docker e descoberta por DNS"
+description: "Conecte serviços em uma rede privada e valide descoberta pelo nome sem depender de IPs de containers."
+category: "Docker"
+level: "Iniciante"
+duration: 25
+updatedAt: 2026-08-26
+prerequisites: ["Docker com Compose, Git e Make"]
+objectives: ["Entender redes bridge definidas pelo usuário", "Resolver serviços por DNS", "Evitar IPs efêmeros"]
+tools: ["Docker", "Compose", "DNS"]
+certifications: []
+testedWith: ["Docker Compose 2.39"]
+repositoryPath: "labs/docker/networks"
+draft: false
+featured: true
+---
+## Subir e inspecionar
+```bash
+git clone https://github.com/ndawpa/platformengineering-website.git
+cd platformengineering-website/labs/docker/networks
+make setup
+docker compose ps
+docker network ls
+docker compose exec client nslookup api
+```
+O serviço `api` não publica porta no host; somente o cliente na rede `backend` consegue alcançá-lo.
+## Validar e limpar
+```bash
+make verify
+docker compose exec client wget -qO- http://api:8080
+make cleanup
+```

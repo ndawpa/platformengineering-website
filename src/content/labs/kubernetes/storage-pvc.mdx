@@ -1,0 +1,39 @@
+---
+title: "PersistentVolumes e PersistentVolumeClaims"
+description: "Provisione armazenamento, acompanhe o binding de um PVC e comprove que os dados sobrevivem à recriação do pod."
+category: "Kubernetes"
+level: "Intermediário"
+duration: 40
+updatedAt: 2026-08-26
+prerequisites: ["Docker, kind, kubectl, Git e Make", "Conceitos básicos de Pods"]
+objectives: ["Interpretar StorageClass, PV e PVC", "Montar um claim em um pod", "Validar persistência após recriação"]
+tools: ["kind", "kubectl", "PVC"]
+certifications: ["CKA", "CKAD"]
+certificationDomain: "Storage e Application Design"
+testedWith: ["Kubernetes 1.34"]
+repositoryPath: "labs/kubernetes/storage-pvc"
+draft: false
+featured: true
+---
+## Preparar o ambiente
+```bash
+git clone https://github.com/ndawpa/platformengineering-website.git
+cd platformengineering-website/labs/kubernetes/storage-pvc
+make setup
+kubectl get storageclass,pv,pvc -n pe-storage
+```
+## Investigar o binding
+```bash
+kubectl describe pvc data -n pe-storage
+kubectl exec -n pe-storage writer -- cat /data/message.txt
+```
+Exclua e recrie somente o pod usando o manifesto; o claim permanece:
+```bash
+kubectl delete pod writer -n pe-storage
+kubectl apply -f exercise.yaml
+make verify
+```
+## Limpar
+```bash
+make cleanup
+```

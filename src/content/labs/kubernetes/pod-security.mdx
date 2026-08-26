@@ -1,0 +1,37 @@
+---
+title: "Pod Security Admission e security contexts"
+description: "Aplique o padrão restricted, observe a rejeição de um pod privilegiado e construa uma especificação compatível."
+category: "Kubernetes"
+level: "Intermediário"
+duration: 35
+updatedAt: 2026-08-26
+prerequisites: ["Docker, kind, kubectl, Git e Make", "SecurityContext básico"]
+objectives: ["Aplicar Pod Security Standards", "Interpretar uma rejeição de admission", "Executar sem root e sem capabilities"]
+tools: ["kind", "kubectl", "Pod Security"]
+certifications: ["CKS"]
+certificationDomain: "Minimize Microservice Vulnerabilities"
+testedWith: ["Kubernetes 1.34"]
+repositoryPath: "labs/kubernetes/pod-security"
+draft: false
+featured: true
+---
+## Preparar e provocar uma rejeição
+```bash
+git clone https://github.com/ndawpa/platformengineering-website.git
+cd platformengineering-website/labs/kubernetes/pod-security
+make setup
+kubectl run privileged -n pe-security --image=busybox:1.37.0 \
+  --overrides='{"spec":{"containers":[{"name":"privileged","image":"busybox:1.37.0","securityContext":{"privileged":true}}]}}' \
+  -- sleep 60
+```
+Leia a mensagem do admission controller e identifique violações de capabilities, usuário e seccomp.
+## Aplicar a especificação segura
+```bash
+kubectl apply -f compliant-pod.yaml
+kubectl get pod compliant -n pe-security -o yaml
+make verify
+```
+## Limpar
+```bash
+make cleanup
+```

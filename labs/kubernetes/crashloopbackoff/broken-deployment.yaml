@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: pe-lab
+  labels:
+    platformengineering.com.br/lab: crashloopbackoff
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: broken-api
+  namespace: pe-lab
+  labels:
+    app: broken-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: broken-api
+  template:
+    metadata:
+      labels:
+        app: broken-api
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: api
+          image: alpine:3.22
+          imagePullPolicy: IfNotPresent
+          command: ["sh", "-c", "echo Iniciando API; exec /app/start.sh"]
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              cpu: 100m
+              memory: 32Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            runAsNonRoot: true
+            runAsUser: 65534
+            seccompProfile:
+              type: RuntimeDefault

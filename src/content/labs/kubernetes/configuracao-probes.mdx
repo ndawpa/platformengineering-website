@@ -1,0 +1,68 @@
+---
+title: "ConfigMaps, Secrets e health probes"
+description: "Investigue um pod em execução que não fica Ready, valide configuração injetada e corrija a readiness probe."
+category: "Kubernetes"
+level: "Iniciante"
+duration: 30
+updatedAt: 2026-08-26
+prerequisites: ["Docker, kind, kubectl, Git e Make", "Conhecimento básico de Deployments"]
+objectives: ["Inspecionar ConfigMaps e Secrets", "Diferenciar readiness de liveness", "Corrigir uma probe sem interromper o diagnóstico"]
+tools: ["kind", "kubectl", "ConfigMap", "Secret"]
+certifications: ["CKAD"]
+certificationDomain: "Configuração, segurança e observabilidade"
+testedWith: ["Kubernetes 1.34"]
+repositoryPath: "labs/kubernetes/configuracao-probes"
+draft: false
+featured: false
+---
+
+O processo do container está vivo, mas o Kubernetes não o considera apto a receber tráfego. Você investigará configuração e probes, tópico central da CKAD.
+
+## Preparar o ambiente
+
+```bash
+git clone https://github.com/ndawpa/platformengineering-website.git
+cd platformengineering-website/labs/kubernetes/configuracao-probes
+make setup
+kubectl get pods -n pe-config
+```
+
+## Investigar por que o pod não está Ready
+
+```bash
+kubectl describe pod -n pe-config -l app=config-api
+kubectl get events -n pe-config --sort-by=.lastTimestamp
+kubectl logs -n pe-config -l app=config-api
+```
+
+O container permanece `Running`, mas a readiness probe consulta uma rota inexistente. Confira as probes declaradas:
+
+```bash
+kubectl get deployment config-api -n pe-config -o yaml
+```
+
+## Validar a configuração
+
+Confira variáveis sem imprimir o valor do token e leia o arquivo montado:
+
+```bash
+kubectl exec -n pe-config deployment/config-api -- sh -c 'echo "$APP_ENV"; test -n "$API_TOKEN" && echo API_TOKEN=definido'
+kubectl exec -n pe-config deployment/config-api -- cat /usr/share/nginx/html/index.html
+```
+
+Secrets Kubernetes não são cofres: evite exibir seus valores em terminal ou logs.
+
+## Corrigir e verificar
+
+```bash
+kubectl patch deployment config-api -n pe-config --type=json -p='[
+  {"op":"replace","path":"/spec/template/spec/containers/0/readinessProbe/httpGet/path","value":"/"}
+]'
+make verify
+```
+
+## Limpar
+
+```bash
+make cleanup
+```

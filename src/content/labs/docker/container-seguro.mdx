@@ -1,0 +1,36 @@
+---
+title: "Container Docker seguro e sem root"
+description: "Execute uma aplicação sem root, remova capabilities, bloqueie escrita no filesystem e valide os controles."
+category: "Docker"
+level: "Intermediário"
+duration: 35
+updatedAt: 2026-08-26
+prerequisites: ["Docker com Compose, Git e Make", "Dockerfile básico"]
+objectives: ["Definir USER não-root", "Aplicar read-only e no-new-privileges", "Validar capabilities removidas"]
+tools: ["Docker", "Compose", "Security"]
+certifications: ["CKS"]
+certificationDomain: "Container security fundamentals"
+testedWith: ["Docker 28", "Docker Compose 2.39"]
+repositoryPath: "labs/docker/container-seguro"
+draft: false
+featured: true
+---
+## Construir e inspecionar
+```bash
+git clone https://github.com/ndawpa/platformengineering-website.git
+cd platformengineering-website/labs/docker/container-seguro
+make setup
+docker compose exec app id
+docker inspect docker-secure-app --format '{{json .HostConfig}}'
+```
+## Testar as restrições
+```bash
+docker compose exec app sh -c 'touch /blocked'
+docker compose exec app sh -c 'touch /tmp/allowed && ls -l /tmp/allowed'
+make verify
+```
+A raiz é somente leitura, mas `/tmp` é um `tmpfs` gravável. O processo usa UID não-root, não recebe novas permissões e perde todas as capabilities.
+## Limpar
+```bash
+make cleanup
+```

@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Namespace
+metadata: { name: pe-rollout }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: web, namespace: pe-rollout }
+spec:
+  replicas: 3
+  strategy:
+    rollingUpdate: { maxUnavailable: 0, maxSurge: 1 }
+  selector: { matchLabels: { app: web } }
+  template:
+    metadata: { labels: { app: web } }
+    spec:
+      containers:
+        - name: web
+          image: nginx:1.28-alpine
+          ports: [{ name: http, containerPort: 80 }]
+          readinessProbe: { httpGet: { path: /, port: http }, periodSeconds: 2 }
+          resources: { requests: { cpu: 10m, memory: 16Mi }, limits: { cpu: 100m, memory: 64Mi } }

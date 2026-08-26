@@ -7,9 +7,9 @@ export const SITE = {
   language: 'pt-BR',
   author: 'Platform Engineering Brasil',
   social: {
-    github: 'https://github.com/platformengineering-brasil',
+    github: 'https://github.com/ndawpa',
   },
-  contentRepository: 'https://github.com/platformengineering-brasil/platformengineering-website',
+  contentRepository: 'https://github.com/ndawpa/platformengineering-website',
   analytics: {
     enabled: false,
     cloudflareToken: '',
@@ -22,6 +22,7 @@ export const SITE = {
     { label: 'Comece aqui', href: '/comece-aqui/' },
     { label: 'Artigos', href: '/artigos/' },
     { label: 'Guias', href: '/guias/' },
+    { label: 'Labs', href: '/labs/' },
     { label: 'Ferramentas', href: '/ferramentas/' },
     { label: 'Roadmap', href: '/roadmap/platform-engineer/' },
     { label: 'Sobre', href: '/sobre/' },
@@ -29,7 +30,7 @@ export const SITE = {
 } as const;
 
 export const CATEGORIES = [
-  'Platform Engineering', 'Kubernetes', 'Terraform', 'AWS', 'Azure', 'DevOps',
+  'Platform Engineering', 'Kubernetes', 'Docker', 'Terraform', 'AWS', 'Azure', 'DevOps',
   'SRE', 'GitOps', 'CI/CD', 'Observability', 'DevSecOps',
 ] as const;
 

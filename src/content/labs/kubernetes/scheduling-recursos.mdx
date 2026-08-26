@@ -1,0 +1,72 @@
+---
+title: "Scheduling, nodeSelector e recursos"
+description: "Investigue um pod Pending, leia decisões do scheduler e corrija a seleção de nó respeitando requests, limits e quota."
+category: "Kubernetes"
+level: "Intermediário"
+duration: 40
+updatedAt: 2026-08-26
+prerequisites: ["Docker, kind, kubectl, Git e Make", "Noções de CPU e memória no Kubernetes"]
+objectives: ["Diagnosticar um pod Pending", "Usar labels e nodeSelector", "Interpretar requests, limits e ResourceQuota"]
+tools: ["kind", "kubectl", "Scheduler", "ResourceQuota"]
+certifications: ["CKA"]
+certificationDomain: "Workloads & Scheduling"
+testedWith: ["Kubernetes 1.34"]
+repositoryPath: "labs/kubernetes/scheduling-recursos"
+draft: false
+featured: false
+---
+
+Este lab exercita scheduling e gerenciamento de recursos, cobrindo Workloads & Scheduling da CKA.
+
+## Preparar o ambiente
+
+```bash
+git clone https://github.com/ndawpa/platformengineering-website.git
+cd platformengineering-website/labs/kubernetes/scheduling-recursos
+make setup
+kubectl get pod worker -n pe-scheduling
+```
+
+## Diagnosticar o estado Pending
+
+```bash
+kubectl describe pod worker -n pe-scheduling
+kubectl get nodes --show-labels
+kubectl get resourcequota -n pe-scheduling
+```
+
+Nos eventos, identifique que nenhum nó possui `workload=nonexistent`. Localize o worker preparado pelo lab:
+
+```bash
+kubectl get nodes -l workload=applications
+```
+
+Confira também requests e limits efetivamente declarados:
+
+```bash
+kubectl get pod worker -n pe-scheduling -o jsonpath='{.spec.containers[0].resources}'
+echo
+```
+
+## Corrigir o agendamento
+
+Pods não permitem alterar `nodeSelector` depois de criados. Gere uma cópia, remova o pod e recrie-o declarativamente:
+
+```bash
+kubectl get pod worker -n pe-scheduling -o yaml > /tmp/worker.yaml
+sed -i 's/workload: nonexistent/workload: applications/' /tmp/worker.yaml
+kubectl replace --force -f /tmp/worker.yaml
+```
+
+Em um fluxo real, altere o manifesto versionado em vez do arquivo exportado. Valide o exercício:
+
+```bash
+make verify
+kubectl get pod worker -n pe-scheduling -o wide
+```
+
+## Limpar
+
+```bash
+make cleanup
+```

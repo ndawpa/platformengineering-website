@@ -1,0 +1,35 @@
+---
+title: "Init containers e padrão sidecar"
+description: "Prepare conteúdo antes da aplicação iniciar e compartilhe dados com um sidecar usando volumes efêmeros."
+category: "Kubernetes"
+level: "Intermediário"
+duration: 35
+updatedAt: 2026-08-26
+prerequisites: ["Docker, kind, kubectl, Git e Make", "Pods e volumes"]
+objectives: ["Diferenciar init container e sidecar", "Compartilhar dados com emptyDir", "Inspecionar logs por container"]
+tools: ["kind", "kubectl", "Multi-container Pod"]
+certifications: ["CKAD"]
+certificationDomain: "Application Design and Build"
+testedWith: ["Kubernetes 1.34"]
+repositoryPath: "labs/kubernetes/init-sidecar"
+draft: false
+featured: false
+---
+## Preparar e acompanhar a inicialização
+```bash
+git clone https://github.com/ndawpa/platformengineering-website.git
+cd platformengineering-website/labs/kubernetes/init-sidecar
+make setup
+kubectl describe pod web -n pe-multicontainer
+```
+Inspecione cada container e os volumes compartilhados:
+```bash
+kubectl logs -n pe-multicontainer web -c prepare
+kubectl exec -n pe-multicontainer web -c web -- cat /usr/share/nginx/html/index.html
+kubectl logs -n pe-multicontainer web -c log-reader
+make verify
+```
+## Limpar
+```bash
+make cleanup
+```

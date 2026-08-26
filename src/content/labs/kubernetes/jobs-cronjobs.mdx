@@ -1,0 +1,37 @@
+---
+title: "Jobs, CronJobs e políticas de execução"
+description: "Execute tarefas finitas, inspecione conclusão e retries e ative um CronJob com histórico controlado."
+category: "Kubernetes"
+level: "Iniciante"
+duration: 30
+updatedAt: 2026-08-26
+prerequisites: ["Docker, kind, kubectl, Git e Make"]
+objectives: ["Distinguir Job e CronJob", "Ler status e logs de jobs", "Controlar suspensão e histórico"]
+tools: ["kind", "kubectl", "Job", "CronJob"]
+certifications: ["CKAD"]
+certificationDomain: "Application Design and Build"
+testedWith: ["Kubernetes 1.34"]
+repositoryPath: "labs/kubernetes/jobs-cronjobs"
+draft: false
+featured: false
+---
+## Preparar e observar
+```bash
+git clone https://github.com/ndawpa/platformengineering-website.git
+cd platformengineering-website/labs/kubernetes/jobs-cronjobs
+make setup
+kubectl get jobs,cronjobs,pods -n pe-jobs
+kubectl logs -n pe-jobs job/report
+```
+O CronJob começa suspenso. Inspecione agenda, concorrência e históricos:
+```bash
+kubectl describe cronjob heartbeat -n pe-jobs
+kubectl patch cronjob heartbeat -n pe-jobs --type=merge -p '{"spec":{"suspend":false}}'
+kubectl create job --from=cronjob/heartbeat heartbeat-manual -n pe-jobs
+kubectl logs -n pe-jobs job/heartbeat-manual
+make verify
+```
+## Limpar
+```bash
+make cleanup
+```

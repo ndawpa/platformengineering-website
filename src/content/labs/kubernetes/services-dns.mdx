@@ -1,0 +1,65 @@
+---
+title: "Troubleshooting de Services e DNS"
+description: "Diagnostique um Service sem endpoints, corrija selectors e valide descoberta DNS e conectividade dentro do cluster."
+category: "Kubernetes"
+level: "Intermediário"
+duration: 40
+updatedAt: 2026-08-26
+prerequisites: ["Docker, kind, kubectl, Git e Make", "Labels, selectors e portas de containers"]
+objectives: ["Relacionar Service, selector e EndpointSlice", "Testar DNS de dentro de um pod", "Separar descoberta de serviço e conectividade"]
+tools: ["kind", "kubectl", "Service", "DNS"]
+certifications: ["CKA", "CKAD"]
+certificationDomain: "Services & Networking"
+testedWith: ["Kubernetes 1.34"]
+repositoryPath: "labs/kubernetes/services-dns"
+draft: false
+featured: true
+---
+
+O Service existe e resolve via DNS, mas não encaminha tráfego. O lab reproduz um problema comum de networking cobrado em CKA e CKAD.
+
+## Preparar o ambiente
+
+```bash
+git clone https://github.com/ndawpa/platformengineering-website.git
+cd platformengineering-website/labs/kubernetes/services-dns
+make setup
+kubectl wait --for=condition=Ready pod/client -n pe-network --timeout=90s
+```
+
+## Examinar o caminho da requisição
+
+```bash
+kubectl get pods -n pe-network --show-labels
+kubectl get service api -n pe-network -o wide
+kubectl get endpointslice -n pe-network -l kubernetes.io/service-name=api
+kubectl describe service api -n pe-network
+```
+
+Teste resolução e HTTP separadamente:
+
+```bash
+kubectl exec -n pe-network client -- nslookup api
+kubectl exec -n pe-network client -- wget -T 3 -qO- http://api
+```
+
+O DNS funciona, mas o EndpointSlice não possui destinos porque o selector do Service não corresponde à label dos pods.
+
+## Corrigir o selector
+
+```bash
+kubectl patch service api -n pe-network --type=merge -p '{"spec":{"selector":{"app":"api"}}}'
+kubectl get endpointslice -n pe-network -l kubernetes.io/service-name=api -w
+```
+
+Quando o endpoint estiver pronto, valide:
+
+```bash
+make verify
+```
+
+## Limpar
+
+```bash
+make cleanup
+```

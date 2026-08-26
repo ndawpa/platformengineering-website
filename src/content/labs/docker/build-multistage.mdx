@@ -1,0 +1,30 @@
+---
+title: "Docker build multi-stage e imagem mínima"
+description: "Separe build e runtime, examine camadas e confirme que ferramentas de compilação não chegam à imagem final."
+category: "Docker"
+level: "Iniciante"
+duration: 30
+updatedAt: 2026-08-26
+prerequisites: ["Docker, Git e Make instalados"]
+objectives: ["Entender estágios de build", "Inspecionar camadas", "Reduzir superfície da imagem final"]
+tools: ["Docker", "Dockerfile"]
+certifications: []
+testedWith: ["Docker 28"]
+repositoryPath: "labs/docker/multistage"
+draft: false
+featured: true
+---
+## Construir a imagem
+```bash
+git clone https://github.com/ndawpa/platformengineering-website.git
+cd platformengineering-website/labs/docker/multistage
+make setup
+docker history pe-lab/multistage:local
+```
+Compare o estágio `builder` com a imagem final no `Dockerfile`. Apenas `/output` atravessa a fronteira.
+## Validar e executar
+```bash
+make verify
+docker run --rm -p 127.0.0.1:8080:8080 pe-lab/multistage:local
+```
+Em outro terminal, acesse `http://127.0.0.1:8080`. Depois interrompa com `Ctrl+C` e execute `make cleanup`.

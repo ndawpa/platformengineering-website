@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Namespace
+metadata: { name: pe-jobs }
+---
+apiVersion: batch/v1
+kind: Job
+metadata: { name: report, namespace: pe-jobs }
+spec:
+  backoffLimit: 2
+  template:
+    spec:
+      restartPolicy: Never
+      containers: [{ name: report, image: busybox:1.37.0, command: ["sh", "-c", "echo relatório concluído"] }]
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata: { name: heartbeat, namespace: pe-jobs }
+spec:
+  schedule: "*/2 * * * *"
+  suspend: true
+  successfulJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: Never
+          containers: [{ name: heartbeat, image: busybox:1.37.0, command: ["date"] }]

@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Namespace
+metadata: { name: pe-multicontainer }
+---
+apiVersion: v1
+kind: Pod
+metadata: { name: web, namespace: pe-multicontainer }
+spec:
+  initContainers:
+    - name: prepare
+      image: busybox:1.37.0
+      command: ["sh", "-c", "echo gerado pelo init container > /content/index.html"]
+      volumeMounts: [{ name: content, mountPath: /content }]
+  containers:
+    - name: web
+      image: nginx:1.28-alpine
+      volumeMounts: [{ name: content, mountPath: /usr/share/nginx/html }, { name: logs, mountPath: /var/log/nginx }]
+    - name: log-reader
+      image: busybox:1.37.0
+      command: ["sh", "-c", "touch /logs/access.log; while true; do echo requisição; sleep 10; done"]
+      volumeMounts: [{ name: logs, mountPath: /logs }]
+  volumes: [{ name: content, emptyDir: {} }, { name: logs, emptyDir: {} }]

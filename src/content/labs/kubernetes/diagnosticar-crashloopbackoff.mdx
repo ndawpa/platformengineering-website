@@ -1,0 +1,172 @@
+---
+title: "Diagnosticar CrashLoopBackOff com kind"
+description: "Crie uma falha real em Kubernetes, investigue eventos e logs e corrija o workload com um processo baseado em evidências."
+category: "Kubernetes"
+level: "Iniciante"
+duration: 35
+updatedAt: 2026-08-26
+prerequisites:
+  - "Docker em execução"
+  - "kind, kubectl, Git e Make instalados"
+  - "4 GB de memória disponíveis"
+objectives:
+  - "Distinguir o estado CrashLoopBackOff da causa da falha"
+  - "Usar describe, events e logs da execução anterior"
+  - "Corrigir e validar um Deployment sem recriar o cluster"
+tools:
+  - "Docker"
+  - "kind"
+  - "kubectl"
+certifications: ["CKA", "CKAD"]
+certificationDomain: "Troubleshooting e manutenção"
+testedWith:
+  - "kind 0.30"
+  - "Kubernetes 1.34"
+repositoryPath: "labs/kubernetes/crashloopbackoff"
+draft: false
+featured: true
+---
+
+Neste laboratório você criará um cluster Kubernetes descartável e implantará um container cuja configuração está quebrada de propósito. A meta não é decorar um comando: é seguir uma sequência de diagnóstico que separa sintomas de causas.
+
+> Execute somente no cluster `pe-crashloopbackoff` criado pelo lab. Antes de qualquer comando, confirme o contexto mostrado por `kubectl config current-context`.
+
+## Preparar o ambiente
+
+Clone o repositório e entre no diretório do exercício:
+
+```bash
+git clone https://github.com/ndawpa/platformengineering-website.git
+cd platformengineering-website/labs/kubernetes/crashloopbackoff
+```
+
+Confira as ferramentas e crie o cluster:
+
+```bash
+make check
+make setup
+```
+
+O alvo `setup` é idempotente: reutiliza o cluster quando ele já existe e reaplica o manifesto do exercício. Confirme o contexto antes de continuar:
+
+```bash
+kubectl config current-context
+```
+
+O resultado esperado é `kind-pe-crashloopbackoff`.
+
+## Checkpoint 1: observar o sintoma
+
+Liste os pods do namespace do laboratório:
+
+```bash
+kubectl get pods -n pe-lab -w
+```
+
+Interrompa o acompanhamento com `Ctrl+C` depois de observar reinícios. Dependendo do instante, o status pode alternar entre `Error` e `CrashLoopBackOff`.
+
+Verifique automaticamente se a falha foi reproduzida:
+
+```bash
+make check-failure
+```
+
+`CrashLoopBackOff` representa a espera progressiva entre novas tentativas. Ele não explica por que o processo terminou.
+
+## Checkpoint 2: coletar evidências
+
+Comece pelo estado e pelos eventos associados ao pod:
+
+```bash
+kubectl describe pod -n pe-lab -l app=broken-api
+kubectl events -n pe-lab --for deployment/broken-api
+```
+
+Agora consulte os logs atuais:
+
+```bash
+kubectl logs -n pe-lab -l app=broken-api
+```
+
+Como o processo reinicia rapidamente, os logs da instância anterior são especialmente importantes:
+
+```bash
+kubectl logs -n pe-lab -l app=broken-api --previous
+```
+
+Você deve encontrar uma tentativa de executar `/app/start.sh` e a mensagem de que o arquivo não existe. A imagem foi iniciada corretamente; o erro está no comando configurado pelo Deployment.
+
+## Checkpoint 3: corrigir o workload
+
+Inspecione primeiro a configuração que será alterada:
+
+```bash
+kubectl get deployment broken-api -n pe-lab \
+  -o jsonpath='{.spec.template.spec.containers[0].command}'
+echo
+```
+
+Corrija o comando do container por meio de um patch explícito:
+
+```bash
+kubectl patch deployment broken-api -n pe-lab --type='json' -p='[
+  {"op":"replace","path":"/spec/template/spec/containers/0/command","value":["sh","-c","echo API iniciada; sleep 3600"]}
+]'
+```
+
+Espere pelo novo rollout:
+
+```bash
+kubectl rollout status deployment/broken-api -n pe-lab --timeout=90s
+```
+
+## Validar o resultado
+
+Execute a verificação automatizada:
+
+```bash
+make verify
+```
+
+Ela valida que o Deployment está disponível, que o pod está `Running` e que não houve reinício no novo pod. Complete a validação manual:
+
+```bash
+kubectl get pods -n pe-lab
+kubectl logs -n pe-lab -l app=broken-api
+```
+
+## Limpar o ambiente
+
+Remova apenas os recursos do exercício:
+
+```bash
+make cleanup
+```
+
+Se não pretende realizar outros labs nesse cluster, remova também o cluster kind:
+
+```bash
+make destroy
+```
+
+## Troubleshooting do laboratório
+
+### Docker não está acessível
+
+Execute `docker info` e confirme que o daemon está ativo e que seu usuário possui permissão para acessá-lo.
+
+### O contexto não é o esperado
+
+Não prossiga contra outro cluster. Selecione explicitamente o ambiente do lab:
+
+```bash
+kubectl config use-context kind-pe-crashloopbackoff
+```
+
+### A falha ainda não apareceu
+
+O backoff leva alguns segundos para se tornar visível. Consulte o estado e repita `make check-failure` depois da primeira reinicialização.
+
+## O que levar para produção
+
+O processo usado aqui é transferível: confirme o contexto, observe o estado, leia eventos, inspecione a terminação anterior, formule uma hipótese, faça a menor correção possível e valide o rollout. Em produção, preserve também os manifests no Git e aplique a mudança pelo pipeline responsável, evitando alterações manuais que gerem drift.

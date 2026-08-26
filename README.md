@@ -57,6 +57,7 @@ src/
 ├── styles/              # CSS global e tipografia editorial
 ├── content.config.ts    # Schema e loader da coleção
 └── utils/               # URLs, datas, ordenação e leitura estimada
+labs/                    # Ambientes reproduzíveis dos Lab Guides
 scripts/                 # Auditorias de links e metadados
 public/
 ├── _headers             # Headers de segurança e cache no Cloudflare
@@ -150,6 +151,20 @@ A busca gera um índice compacto a partir da coleção durante o build e filtra 
 ## Guias e progresso
 
 Guias são compostos a partir do campo `series` dos artigos. A página do guia pode manter progresso no `localStorage`, sem conta ou identificação do visitante. O guia de fundamentos em `src/pages/guias/fundamentos-platform-engineering.astro` serve como referência.
+
+## Laboratórios locais
+
+Lab Guides ficam em `src/content/labs/` e seus arquivos executáveis em `labs/<categoria>/<slug>/`. A rota `/labs/` lista os exercícios disponíveis. Cada lab deve operar em namespace ou ambiente isolado, declarar versões testadas, validar o resultado e oferecer um procedimento de limpeza.
+
+Para adicionar um laboratório:
+
+1. Crie o guia MDX em `src/content/labs/<categoria>/<slug>.mdx`.
+2. Adicione manifests e automação em `labs/<categoria>/<slug>/`.
+3. Use `repositoryPath` no frontmatter para conectar o guia aos arquivos.
+4. Teste `setup`, checkpoints, `verify`, `cleanup` e `destroy` em uma máquina sem estado prévio.
+5. Nunca inclua secrets, contas cloud reais ou comandos que operem em um contexto Kubernetes não verificado.
+
+O primeiro exemplo, `labs/kubernetes/crashloopbackoff`, usa kind e um namespace exclusivo. Essa separação permitirá adicionar futuramente um executor interativo sem acoplar o conteúdo editorial à infraestrutura de provisionamento.
 
 ## Autores, revisão e contribuições
 

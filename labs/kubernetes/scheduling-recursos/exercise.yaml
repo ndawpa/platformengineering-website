@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Namespace
+metadata: { name: pe-scheduling }
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata: { name: compute, namespace: pe-scheduling }
+spec:
+  hard: { requests.cpu: 500m, requests.memory: 256Mi, limits.cpu: "1", limits.memory: 512Mi }
+---
+apiVersion: v1
+kind: Pod
+metadata: { name: worker, namespace: pe-scheduling }
+spec:
+  nodeSelector: { workload: nonexistent }
+  containers:
+    - name: worker
+      image: busybox:1.37.0
+      command: ["sleep", "3600"]
+      resources: { requests: { cpu: 50m, memory: 32Mi }, limits: { cpu: 100m, memory: 64Mi } }

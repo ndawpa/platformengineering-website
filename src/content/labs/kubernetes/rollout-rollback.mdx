@@ -1,0 +1,75 @@
+---
+title: "Rolling updates e rollback de Deployments"
+description: "Pratique atualização gradual, acompanhe ReplicaSets, provoque uma release inválida e restaure uma versão saudável."
+category: "Kubernetes"
+level: "Iniciante"
+duration: 35
+updatedAt: 2026-08-26
+prerequisites: ["Docker, kind, kubectl, Git e Make", "Conceitos básicos de Pods e Deployments"]
+objectives: ["Acompanhar um rolling update", "Diagnosticar uma imagem inválida", "Usar o histórico e executar rollback"]
+tools: ["kind", "kubectl", "Deployment"]
+certifications: ["CKA", "CKAD"]
+certificationDomain: "Workloads e Application Deployment"
+testedWith: ["Kubernetes 1.34"]
+repositoryPath: "labs/kubernetes/rollout-rollback"
+draft: false
+featured: true
+---
+
+Este exercício cobre atualização e recuperação de workloads, competências presentes em CKA e CKAD.
+
+## Preparar o ambiente
+
+```bash
+git clone https://github.com/ndawpa/platformengineering-website.git
+cd platformengineering-website/labs/kubernetes/rollout-rollback
+make setup
+kubectl config current-context
+```
+
+Confirme o contexto `kind-pe-k8s-labs` e espere a versão inicial:
+
+```bash
+kubectl rollout status deployment/web -n pe-rollout
+```
+
+## Executar um rolling update
+
+Atualize para uma versão válida e acompanhe pods e ReplicaSets em outro terminal:
+
+```bash
+kubectl set image deployment/web web=nginx:1.29-alpine -n pe-rollout
+kubectl get pods,rs -n pe-rollout -w
+kubectl rollout status deployment/web -n pe-rollout
+```
+
+Observe como `maxUnavailable: 0` mantém as três réplicas disponíveis durante a troca.
+
+## Provocar e diagnosticar uma falha
+
+```bash
+kubectl set image deployment/web web=nginx:versao-inexistente -n pe-rollout
+kubectl rollout status deployment/web -n pe-rollout --timeout=30s
+kubectl get pods -n pe-rollout
+kubectl describe pod -n pe-rollout -l app=web
+kubectl rollout history deployment/web -n pe-rollout
+```
+
+Identifique `ImagePullBackOff` nos eventos. A estratégia preserva pods antigos, mas o rollout não progride.
+
+## Fazer rollback e validar
+
+Volte duas revisões para a versão inicial esperada pelo verificador:
+
+```bash
+kubectl rollout undo deployment/web -n pe-rollout --to-revision=1
+make verify
+```
+
+## Limpar o ambiente
+
+```bash
+make cleanup
+```
+
+Use `make destroy` somente quando terminar todos os labs que compartilham o cluster `pe-k8s-labs`.
