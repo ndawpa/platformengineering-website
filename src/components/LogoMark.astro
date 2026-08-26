@@ -1,0 +1,18 @@
+---
+interface Props { class?: string; title?: string; }
+const { class: className = 'size-8', title } = Astro.props;
+---
+<svg class={className} viewBox="0 0 40 40" role={title ? 'img' : undefined} aria-hidden={title ? undefined : 'true'} aria-label={title} xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="platform-mark-gradient" x1="7" y1="8" x2="33" y2="31" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#38bdf8" />
+      <stop offset="1" stop-color="#2dd4bf" />
+    </linearGradient>
+  </defs>
+  <rect x="1" y="1" width="38" height="38" rx="11" fill="#07111f" />
+  <path d="M8.5 15.5 20 9l11.5 6.5L20 22 8.5 15.5Z" fill="url(#platform-mark-gradient)" fill-opacity=".2" stroke="url(#platform-mark-gradient)" stroke-width="2" stroke-linejoin="round" />
+  <path d="m8.5 23 11.5 7 11.5-7M8.5 15.5V23L20 30l11.5-7v-7.5" fill="none" stroke="url(#platform-mark-gradient)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+  <circle cx="8.5" cy="15.5" r="2.25" fill="#38bdf8" />
+  <circle cx="20" cy="9" r="2.25" fill="#7dd3fc" />
+  <circle cx="31.5" cy="15.5" r="2.25" fill="#2dd4bf" />
+</svg>

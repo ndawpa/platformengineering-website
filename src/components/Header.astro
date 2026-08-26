@@ -1,12 +1,13 @@
 ---
 import { SITE } from '../config/site';
 import ThemeToggle from './ThemeToggle.astro';
+import LogoMark from './LogoMark.astro';
 const path = Astro.url.pathname;
 ---
 <header class="sticky top-0 z-50 border-b border-slate-200/80 bg-slate-50/90 backdrop-blur-xl dark:border-slate-800 dark:bg-ink-950/90">
   <div class="container-shell flex h-16 items-center gap-5">
     <a href="/" class="group flex shrink-0 items-center gap-2.5" aria-label="Platform Engineering Brasil — início">
-      <span class="grid size-8 place-items-center rounded-lg bg-gradient-to-br from-sky-500 to-teal-400 text-sm font-black text-white shadow-sm">PE</span>
+      <LogoMark class="size-9 shrink-0 transition-transform group-hover:-translate-y-0.5" />
       <span class="hidden text-sm font-bold tracking-tight text-slate-950 dark:text-white sm:block">Platform Engineering</span>
     </a>
     <nav class="ml-auto hidden items-center gap-1 lg:flex" aria-label="Navegação principal">
