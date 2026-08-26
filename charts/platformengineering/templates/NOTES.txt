@@ -1,0 +1,16 @@
+{{- if .Values.ingress.enabled }}
+O Platform Engineering Brasil está configurado nos hosts:
+{{- range .Values.ingress.hosts }}
+  {{- range .paths }}
+  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ .host }}{{ .path }}
+  {{- end }}
+{{- end }}
+{{- else }}
+Para acessar localmente:
+  kubectl -n {{ .Release.Namespace }} port-forward svc/{{ include "platformengineering.fullname" . }} 8080:{{ .Values.service.port }}
+
+Depois abra http://127.0.0.1:8080
+{{- end }}
+
+Teste a instalação com:
+  helm test {{ .Release.Name }} -n {{ .Release.Namespace }}

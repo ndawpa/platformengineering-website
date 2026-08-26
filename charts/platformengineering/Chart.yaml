@@ -1,0 +1,15 @@
+apiVersion: v2
+name: platformengineering
+description: Portal brasileiro de Platform Engineering, DevOps, SRE e Cloud
+type: application
+version: 0.1.0
+appVersion: "latest"
+kubeVersion: ">=1.27.0-0"
+home: https://platformengineering.com.br
+sources:
+  - https://github.com/ndawpa/platformengineering-website
+icon: https://platformengineering.com.br/favicon.svg
+maintainers:
+  - name: Platform Engineering Brasil
+annotations:
+  artifacthub.io/category: integration-delivery

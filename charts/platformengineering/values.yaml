@@ -1,0 +1,125 @@
+replicaCount: 2
+
+image:
+  repository: ghcr.io/ndawpa/platformengineering-website
+  pullPolicy: IfNotPresent
+  tag: latest
+  digest: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  automount: false
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 101
+  runAsGroup: 101
+  fsGroup: 101
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: false
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+  annotations: {}
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: platformengineering.com.br
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+  # - secretName: platformengineering-tls
+  #   hosts:
+  #     - platformengineering.com.br
+
+resources:
+  requests:
+    cpu: 25m
+    memory: 32Mi
+  limits:
+    cpu: 250m
+    memory: 128Mi
+
+livenessProbe:
+  enabled: true
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 2
+  failureThreshold: 3
+
+readinessProbe:
+  enabled: true
+  initialDelaySeconds: 2
+  periodSeconds: 5
+  timeoutSeconds: 2
+  failureThreshold: 3
+
+startupProbe:
+  enabled: true
+  periodSeconds: 2
+  timeoutSeconds: 2
+  failureThreshold: 15
+
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: ""
+  behavior: {}
+
+podDisruptionBudget:
+  enabled: false
+  minAvailable: 1
+  maxUnavailable: ""
+
+networkPolicy:
+  enabled: false
+  # Quando habilitada, aceita por padrão apenas pods do mesmo namespace.
+  # Substitua a lista para restringir pods ou liberar seu ingress controller.
+  ingressFrom:
+    - podSelector: {}
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+topologySpreadConstraints: []
+
+terminationGracePeriodSeconds: 30
+
+revisionHistoryLimit: 3
+
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxUnavailable: 0
+    maxSurge: 1
+
+extraEnv: []
+extraVolumes: []
+extraVolumeMounts: []
+
+tests:
+  enabled: true

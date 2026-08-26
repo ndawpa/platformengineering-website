@@ -231,7 +231,42 @@ ghcr.io/<owner>/<repository>:latest
 
 Tags Git no formato `v1.2.3` também geram tags semânticas `1.2.3` e `1.2`. O workflow inclui cache, SBOM e provenance. Caso o pacote deva ser público, altere sua visibilidade nas configurações de Packages do GitHub após a primeira publicação.
 
-Os manifestos Kubernetes não fazem parte deste repositório, conforme a separação atual entre aplicação e configuração de deploy.
+### Deploy com Helm
+
+O chart em `charts/platformengineering/` cria Deployment, Service e ServiceAccount. Ingress, autoscaling, PodDisruptionBudget e NetworkPolicy são opcionais. Os defaults usam duas réplicas, probes em `/healthz`, recursos conservadores e a imagem pública do projeto no GHCR.
+
+Instalação diretamente deste repositório:
+
+```bash
+helm upgrade --install platformengineering ./charts/platformengineering \
+  --namespace platformengineering \
+  --create-namespace \
+  --set image.tag=sha-<commit>
+```
+
+Para habilitar um Ingress:
+
+```bash
+helm upgrade --install platformengineering ./charts/platformengineering \
+  --namespace platformengineering \
+  --create-namespace \
+  --set image.tag=sha-<commit> \
+  --set ingress.enabled=true \
+  --set ingress.className=nginx \
+  --set ingress.hosts[0].host=platformengineering.com.br
+```
+
+O workflow `.github/workflows/helm.yml` valida o chart em pull requests e publica versões no GHCR quando uma tag `vX.Y.Z` é criada. Após a primeira publicação, o cluster pode instalar o chart OCI sem clonar o repositório:
+
+```bash
+helm upgrade --install platformengineering \
+  oci://ghcr.io/ndawpa/charts/platformengineering \
+  --version 0.1.0 \
+  --namespace platformengineering \
+  --create-namespace
+```
+
+Consulte `charts/platformengineering/README.md` e `values.yaml` para configurar registry privado, pull secrets, TLS, recursos, scheduling e políticas de disponibilidade/rede.
 
 ## CI/CD e fluxo editorial
 
