@@ -1,0 +1,98 @@
+---
+title: "Como estruturar repositórios GitOps com Argo CD"
+description: "Organize aplicações, ambientes e ownership em repositórios GitOps sem criar camadas difíceis de operar."
+publishedAt: 2026-08-26
+updatedAt: 2026-08-26
+author: "Platform Engineering Brasil"
+category: "GitOps"
+tags: [gitops, argocd, repositories]
+draft: false
+featured: true
+level: Intermediário
+prerequisites:
+  - Conceitos de GitOps e Kubernetes
+objectives:
+  - Separar código da aplicação e configuração de ambiente
+  - Definir ownership e promoção entre ambientes
+  - Evitar abstrações excessivas
+series: "GitOps com Argo CD"
+seriesOrder: 2
+sources:
+  - title: "Argo CD — Best Practices"
+    url: "https://argo-cd.readthedocs.io/en/stable/user-guide/best_practices/"
+revisionNotes: []
+reviewAt: 2027-02-26
+testedWith: ["Argo CD 3.x"]
+---
+
+A estrutura do repositório GitOps define quem pode mudar o estado desejado, como uma versão avança entre ambientes e quanto contexto é necessário para revisar um pull request.
+
+## Separe código e configuração
+
+O repositório da aplicação produz um artefato imutável. O repositório GitOps referencia esse artefato e descreve sua execução. Essa separação permite que o reconciliador observe apenas configuração operacional e evita ciclos em que o pipeline altera o próprio branch de código.
+
+```text
+checkout-app/
+├── src/
+├── Dockerfile
+└── .github/workflows/build.yml
+
+checkout-gitops/
+├── base/
+│   ├── deployment.yaml
+│   └── service.yaml
+└── overlays/
+    ├── development/
+    ├── staging/
+    └── production/
+```
+
+Uma organização pode manter várias aplicações no mesmo repositório GitOps, desde que ownership e permissões continuem claros.
+
+## Ambiente por diretório ou branch?
+
+Diretórios tornam a diferença entre ambientes visível em uma única revisão e evitam branches permanentes divergentes. Branches podem ser necessários por controle de acesso, mas exigem uma estratégia explícita de merge e correção.
+
+Prefira diretórios quando não houver motivo forte para branches de ambiente.
+
+## Promoção
+
+Promover significa alterar a referência do artefato, não reconstruí-lo:
+
+```yaml
+images:
+  - name: ghcr.io/acme/checkout
+    newTag: sha-8c41f9a
+```
+
+O mesmo digest deve atravessar staging e produção. O pull request de promoção mostra exatamente qual versão será reconciliada.
+
+## Ownership
+
+Use `CODEOWNERS` para separar responsabilidades. Times de produto podem controlar seus overlays, enquanto mudanças em políticas, namespaces ou componentes compartilhados exigem revisão da plataforma.
+
+Não centralize toda alteração em um único time: isso transforma GitOps em uma nova fila de tickets.
+
+## Evite profundidade excessiva
+
+Helm sobre Kustomize, valores gerados e múltiplos repositórios de templates tornam difícil prever o manifesto final. Uma pessoa revisora deve conseguir renderizar localmente:
+
+```bash
+kustomize build overlays/production
+# ou
+helm template checkout ./chart -f values-production.yaml
+```
+
+## Secrets
+
+Nunca grave secret em texto claro. Use referências a um secret manager ou criptografia Git com processo claro de rotação. O repositório ainda deve revelar nomes e relações suficientes para revisão.
+
+## Checklist
+
+- Artefatos são imutáveis?
+- Produção referencia uma versão explícita?
+- Ownership acompanha fronteiras de responsabilidade?
+- O manifesto final pode ser renderizado localmente?
+- Credenciais não estão no Git?
+- Rollback é um revert compreensível?
+- O Argo CD está restrito aos repositórios e destinos necessários?

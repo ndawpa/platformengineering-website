@@ -1,0 +1,89 @@
+---
+title: "Platform as a Product: como tratar a plataforma como produto"
+description: "Aplique pesquisa, métricas e gestão de produto para construir uma plataforma interna que os times escolham usar."
+publishedAt: 2026-08-26
+updatedAt: 2026-08-26
+author: "Platform Engineering Brasil"
+category: "Platform Engineering"
+tags: [platform-engineering, product-management, developer-experience]
+draft: false
+featured: true
+level: Intermediário
+prerequisites:
+  - Entendimento básico de plataformas internas
+objectives:
+  - Definir usuários e proposta de valor da plataforma
+  - Organizar discovery e roadmap orientados a resultados
+  - Evitar métricas de vaidade
+series: "Fundamentos de Platform Engineering"
+seriesOrder: 5
+sources:
+  - title: "CNCF Platforms Working Group — Platforms White Paper"
+    url: "https://tag-app-delivery.cncf.io/whitepapers/platforms/"
+revisionNotes: []
+reviewAt: 2027-02-26
+testedWith: []
+---
+
+**Platform as a Product** significa administrar a plataforma interna com disciplina de produto: compreender usuários, escolher problemas relevantes, entregar capacidades completas e medir resultados. Não significa vender a plataforma para os próprios desenvolvedores.
+
+## Comece pelo usuário
+
+“Desenvolvedor” é amplo demais. Um time que mantém APIs críticas, uma equipe de dados e quem desenvolve aplicações móveis possuem jornadas diferentes. Identifique segmentos por necessidades e contexto operacional.
+
+Para cada segmento, observe tarefas reais:
+
+- criar um serviço;
+- publicar uma mudança;
+- diagnosticar uma falha;
+- solicitar uma dependência;
+- demonstrar conformidade.
+
+Entrevistas ajudam, mas comportamento é evidência mais forte. Acompanhe uma jornada completa e registre esperas, decisões, retrabalho e pontos onde o usuário abandona o caminho recomendado.
+
+## Defina a proposta de valor
+
+Uma proposta útil conecta capacidade e resultado:
+
+> Times de APIs criam serviços observáveis em produção em menos de uma hora, sem abrir tickets para infraestrutura.
+
+“Ter um portal moderno” descreve uma solução. “Reduzir o tempo e a variabilidade para publicar um serviço seguro” descreve valor.
+
+## Roadmap orientado a problemas
+
+Evite organizar o roadmap apenas por integrações — “adicionar Vault”, “instalar Backstage”, “migrar pipeline”. Prefira problemas verificáveis:
+
+```text
+Problema: novos serviços levam quatro dias para chegar ao primeiro deploy.
+Hipótese: um template com pipeline e ambiente reduz esperas e retrabalho.
+Sinal: mediana do tempo até primeiro deploy e taxa de conclusão sem suporte.
+```
+
+Uma integração só entra quando resolve parte importante dessa hipótese.
+
+## Métricas que ajudam
+
+Combine três perspectivas:
+
+1. **Adoção:** quem usa, para quais jornadas e com que frequência.
+2. **Experiência:** sucesso da tarefa, tempo, satisfação e necessidade de suporte.
+3. **Resultado operacional:** frequência de deploy, falhas, recuperação e conformidade.
+
+Número de logins ou recursos provisionados isoladamente pode crescer enquanto a experiência piora. Métricas precisam ser segmentadas e ligadas a uma jornada.
+
+## Produto não significa ausência de padrões
+
+A plataforma pode impor limites necessários. A diferença está em tornar padrões claros, automatizados e proporcionais ao risco. Casos excepcionais precisam de um processo explícito, não de atalhos informais.
+
+## Erros comuns
+
+- começar pela ferramenta antes do problema;
+- tratar adoção obrigatória como validação de valor;
+- manter backlog somente com pedidos do time mais vocal;
+- medir disponibilidade da plataforma, mas não sucesso do usuário;
+- lançar muitas capacidades incompletas;
+- não comunicar mudanças incompatíveis.
+
+## Cadência recomendada
+
+Mantenha discovery contínuo, revisão mensal de métricas e planejamento trimestral por resultados. Publique changelog e deprecações. Uma plataforma interna também precisa conquistar confiança release após release.

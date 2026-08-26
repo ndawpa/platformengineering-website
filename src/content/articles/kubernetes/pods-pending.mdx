@@ -1,0 +1,96 @@
+---
+title: "Como diagnosticar pods em Pending no Kubernetes"
+description: "Descubra por que o scheduler não posiciona um pod e investigue recursos, afinidade, taints e volumes."
+publishedAt: 2026-08-26
+updatedAt: 2026-08-26
+author: "Platform Engineering Brasil"
+category: "Kubernetes"
+tags: [kubernetes, troubleshooting, scheduling]
+draft: false
+featured: false
+level: Intermediário
+prerequisites:
+  - Acesso ao cluster com kubectl
+objectives:
+  - Ler as decisões do scheduler nos eventos
+  - Diagnosticar recursos, seletores, taints e volumes
+  - Evitar correções que apenas deslocam o problema
+series: "Kubernetes Troubleshooting"
+seriesOrder: 3
+sources:
+  - title: "Kubernetes — Scheduling, Preemption and Eviction"
+    url: "https://kubernetes.io/docs/concepts/scheduling-eviction/"
+revisionNotes: []
+reviewAt: 2027-02-26
+testedWith: ["Kubernetes 1.35", "kubectl 1.35"]
+---
+
+Um pod em `Pending` foi aceito pelo cluster, mas ainda não está executando. Frequentemente ele aguarda o scheduler encontrar um node compatível; também pode esperar por volumes ou inicialização de componentes.
+
+## Comece pelos eventos
+
+```bash
+kubectl describe pod worker-6f8d7 -n processamento
+kubectl get events -n processamento --sort-by='.lastTimestamp'
+```
+
+Na seção `Events`, procure mensagens `FailedScheduling`. O scheduler informa quantos nodes foram rejeitados e por quais motivos.
+
+## Recursos insuficientes
+
+Mensagens como `Insufficient cpu` ou `Insufficient memory` comparam **requests**, não utilização instantânea. Confira o pod:
+
+```bash
+kubectl get pod worker-6f8d7 -n processamento \
+  -o jsonpath='{.spec.containers[*].resources.requests}'
+kubectl describe nodes
+```
+
+Um node com CPU ociosa pode não ter capacidade alocável para novos requests. Reduzir requests sem telemetria aumenta risco de contenção; valide consumo histórico e capacidade do cluster.
+
+## Seletores e afinidade
+
+`nodeSelector`, `nodeAffinity`, `podAffinity` e `podAntiAffinity` restringem candidatos. Liste labels e compare com a especificação:
+
+```bash
+kubectl get nodes --show-labels
+kubectl get pod worker-6f8d7 -n processamento -o yaml
+```
+
+Restrições combinadas podem deixar o conjunto vazio mesmo quando cada regra parece correta isoladamente.
+
+## Taints e tolerations
+
+Nodes dedicados ou sob pressão recebem taints. O pod precisa tolerar o taint e ainda satisfazer as demais condições:
+
+```bash
+kubectl get nodes -o custom-columns=NAME:.metadata.name,TAINTS:.spec.taints
+```
+
+Não adicione tolerations amplas apenas para agendar. Entenda por que o taint existe e se o workload realmente deve entrar naquele pool.
+
+## Volumes
+
+PVC não vinculado, zona incompatível e limites do driver também mantêm pods pendentes:
+
+```bash
+kubectl get pvc -n processamento
+kubectl describe pvc dados-worker -n processamento
+kubectl get storageclass
+```
+
+Com topologia zonal, o volume e o node precisam ser compatíveis. Observe `volumeBindingMode` da StorageClass.
+
+## Autoscaling não é instantâneo
+
+Se existe cluster autoscaler, confirme se o pod é elegível para expansão. Limites do node group, quotas cloud, tipos indisponíveis ou constraints impossíveis podem impedir novos nodes.
+
+## Checklist
+
+1. Leia `FailedScheduling`.
+2. Compare requests e capacidade alocável.
+3. Revise selectors e regras de afinidade em conjunto.
+4. Confira taints e tolerations.
+5. Verifique PVC, StorageClass e zona.
+6. Inspecione limites e eventos do autoscaler.
+7. Corrija a restrição causal e acompanhe o novo evento.

@@ -22,6 +22,10 @@ const articles = defineCollection({
     seriesOrder: z.number().int().positive().optional(),
     sources: z.array(z.object({ title: z.string(), url: z.url() })).default([]),
     revisionNotes: z.array(z.object({ date: z.coerce.date(), note: z.string() })).default([]),
+    reviewedBy: z.string().default('Equipe editorial'),
+    reviewAt: z.coerce.date().default(new Date('2027-02-26')),
+    testedWith: z.array(z.string()).default([]),
+    labRepository: z.url().optional(),
   }),
 });
 

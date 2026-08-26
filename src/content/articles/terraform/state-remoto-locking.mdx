@@ -1,0 +1,107 @@
+---
+title: "Terraform state remoto e locking em equipes"
+description: "Configure armazenamento remoto, locking, recuperação e acesso seguro ao estado Terraform."
+publishedAt: 2026-08-26
+updatedAt: 2026-08-26
+author: "Platform Engineering Brasil"
+category: "Terraform"
+tags: [terraform, state, iac]
+draft: false
+featured: true
+level: Intermediário
+prerequisites:
+  - Projetos Terraform básicos
+objectives:
+  - Entender riscos do state local
+  - Selecionar um backend com locking e recuperação
+  - Migrar estado sem expor credenciais
+series: "Terraform em produção"
+seriesOrder: 2
+sources:
+  - title: "HashiCorp — State Storage and Locking"
+    url: "https://developer.hashicorp.com/terraform/language/state/backends"
+  - title: "HashiCorp — State Locking"
+    url: "https://developer.hashicorp.com/terraform/language/state/locking"
+revisionNotes: []
+reviewAt: 2027-02-26
+testedWith: ["Terraform 1.x"]
+---
+
+O state conecta recursos declarados aos objetos reais. Em uma equipe, mantê-lo apenas no computador de uma pessoa cria risco de perda, concorrência e exposição de dados sensíveis.
+
+## O que um backend precisa oferecer
+
+Avalie pelo menos:
+
+- criptografia em trânsito e repouso;
+- controle de acesso por identidade;
+- locking consistente;
+- versionamento e recuperação;
+- auditoria;
+- disponibilidade compatível com o processo de mudanças.
+
+State remoto não significa state público. Restrinja leitura: mesmo valores marcados como `sensitive` podem existir no arquivo.
+
+## Locking
+
+Antes de uma operação que escreve estado, o Terraform solicita um lock quando o backend suporta. Se outra execução possui o lock, a nova operação deve aguardar ou falhar. Isso evita dois applies produzirem snapshots concorrentes.
+
+```bash
+terraform apply -lock-timeout=10m
+```
+
+Evite `-lock=false`. Essa opção remove uma proteção de integridade, não apenas uma espera inconveniente.
+
+## Configuração parcial
+
+O bloco de backend não aceita variáveis comuns do Terraform. Mantenha identificadores não sensíveis no código e injete detalhes por arquivo ou parâmetros no `init`:
+
+```hcl
+terraform {
+  backend "s3" {}
+}
+```
+
+```bash
+terraform init \
+  -backend-config="bucket=org-terraform-state" \
+  -backend-config="key=network/prod.tfstate" \
+  -backend-config="region=us-east-1"
+```
+
+Use identidade do ambiente, como OIDC no CI, em vez de gravar chaves no arquivo de backend.
+
+## Migração
+
+Faça backup e execute a migração em uma janela sem writers concorrentes:
+
+```bash
+terraform state pull > state-before-migration.json
+terraform init -migrate-state
+terraform plan
+```
+
+Proteja o backup como secret e remova-o conforme a política de retenção. Nunca o envie ao Git.
+
+## Force unlock
+
+`terraform force-unlock` deve ser usado somente após confirmar que a execução proprietária terminou e que o ID corresponde ao lock órfão:
+
+```bash
+terraform force-unlock LOCK_ID
+```
+
+Desbloquear um apply ainda ativo permite múltiplos writers e pode corromper o estado.
+
+## Estratégia de recuperação
+
+Teste restauração antes de precisar dela. Documente como localizar uma versão anterior, bloquear novas execuções, validar lineage/serial e comparar infraestrutura após a recuperação.
+
+## Checklist
+
+1. Backend possui locking?
+2. Versionamento e retenção estão habilitados?
+3. CI usa identidade curta e auditável?
+4. Leitura está restrita ao menor grupo possível?
+5. Existe procedimento testado de recuperação?
+6. Estados são separados por ciclo de vida e raio de impacto?

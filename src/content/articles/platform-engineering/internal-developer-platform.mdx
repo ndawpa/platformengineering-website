@@ -1,0 +1,91 @@
+---
+title: "O que é uma Internal Developer Platform?"
+description: "Entenda os componentes, contratos e limites de uma plataforma interna para desenvolvedores."
+publishedAt: 2026-08-26
+updatedAt: 2026-08-26
+author: "Platform Engineering Brasil"
+category: "Platform Engineering"
+tags: [platform-engineering, idp, developer-experience]
+draft: false
+featured: true
+level: Iniciante
+prerequisites:
+  - Noções de entrega e operação de software
+objectives:
+  - Diferenciar plataforma interna, portal e ferramenta
+  - Reconhecer os principais componentes de uma IDP
+  - Definir um primeiro fluxo de self-service
+series: "Fundamentos de Platform Engineering"
+seriesOrder: 4
+sources:
+  - title: "CNCF Platforms Working Group — Platforms White Paper"
+    url: "https://tag-app-delivery.cncf.io/whitepapers/platforms/"
+revisionNotes: []
+reviewAt: 2027-02-26
+testedWith: []
+---
+
+Uma **Internal Developer Platform (IDP)** é um conjunto integrado de capacidades que permite aos times entregar e operar software com autonomia. Ela oferece interfaces consistentes para tarefas como criar serviços, provisionar infraestrutura, realizar deploy e consultar telemetria.
+
+Uma IDP não é um produto específico. Também não é sinônimo de portal: o portal pode ser uma interface importante, mas a plataforma existe nos contratos, APIs, automações e serviços que sustentam os fluxos.
+
+## O problema que uma IDP resolve
+
+Em organizações que crescem, cada time começa a resolver as mesmas questões: pipeline, identidade, observabilidade, secrets, ambientes e deploy. A liberdade inicial se transforma em duplicação e carga cognitiva.
+
+A plataforma consolida decisões recorrentes sem retirar o ownership das aplicações. O desenvolvedor expressa uma intenção — “criar uma API”, “publicar uma versão”, “abrir um ambiente temporário” — e recebe uma experiência previsível com segurança incorporada.
+
+## Componentes essenciais
+
+### Interfaces de consumo
+
+Portais, CLIs, APIs, templates e documentação são diferentes portas de entrada. A interface deve seguir a tarefa: descoberta funciona bem em um catálogo; automação precisa de API; operações frequentes podem favorecer uma CLI.
+
+### Orquestração
+
+Essa camada converte uma ação do usuário em um workflow. Ela coordena repositórios, pipelines, cloud, Kubernetes, identidade e políticas, preservando estado e devolvendo feedback compreensível.
+
+### Capacidades da plataforma
+
+São os produtos consumíveis: criação de ambientes, bancos gerenciados, pipelines, observabilidade, gestão de secrets e deploy. Cada capacidade precisa de owner, documentação, SLO e contrato de evolução.
+
+### Guardrails
+
+Políticas de segurança, custo e conformidade devem aparecer dentro do fluxo. Um guardrail útil explica a violação e oferece um caminho de correção; uma barreira opaca apenas desloca trabalho para tickets.
+
+## Um fluxo mínimo
+
+Um primeiro golden path pode criar um serviço HTTP:
+
+```text
+Template escolhido
+→ repositório criado
+→ pipeline configurado
+→ namespace provisionado
+→ aplicação publicada
+→ dashboard e alertas básicos disponíveis
+```
+
+Esse fluxo pequeno já cruza várias capacidades e permite medir tempo, falhas e abandono.
+
+## O que não caracteriza uma IDP
+
+- um portal que apenas agrupa links;
+- um cluster Kubernetes compartilhado;
+- scripts conhecidos somente pelo time de infraestrutura;
+- um catálogo sem workflows acionáveis;
+- uma fila de tickets com uma interface diferente.
+
+## Como começar
+
+Escolha uma jornada frequente e dolorosa. Mapeie o tempo ativo, esperas, transferências e falhas. Entregue o menor caminho completo e acompanhe se as equipes conseguem usá-lo sem ajuda síncrona.
+
+Uma IDP bem-sucedida reduz a distância entre intenção e operação confiável. Sua qualidade é percebida pelo resultado do usuário, não pela quantidade de ferramentas integradas.
+
+## Checklist
+
+- O usuário e a jornada estão definidos?
+- Existe uma capacidade completa por trás da interface?
+- O fluxo possui feedback e tratamento de falhas?
+- Há caminho de escape para casos excepcionais?
+- Adoção e resultado são medidos?

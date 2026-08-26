@@ -1,0 +1,108 @@
+---
+title: "Como medir o sucesso de uma plataforma interna"
+description: "Combine adoção, experiência, fluxo e operação para saber se a plataforma melhora o trabalho dos times."
+publishedAt: 2026-08-26
+updatedAt: 2026-08-26
+author: "Platform Engineering Brasil"
+category: "Platform Engineering"
+tags: [platform-engineering, metrics, developer-experience]
+draft: false
+featured: true
+level: Intermediário
+prerequisites:
+  - Uma plataforma ou golden path em operação
+objectives:
+  - Criar uma árvore de métricas por jornada
+  - Separar adoção de resultado
+  - Evitar métricas de vaidade e incentivos ruins
+series: "Fundamentos de Platform Engineering"
+seriesOrder: 7
+sources:
+  - title: "CNCF Platforms Working Group — Platforms White Paper"
+    url: "https://tag-app-delivery.cncf.io/whitepapers/platforms/"
+revisionNotes: []
+reviewAt: 2027-02-26
+testedWith: []
+---
+
+Uma plataforma interna pode estar disponível, receber acessos e ainda assim não melhorar a entrega. Medir sucesso exige ligar capacidades a jornadas e resultados dos times consumidores.
+
+## Comece por uma hipótese
+
+Exemplo:
+
+> Se oferecermos criação self-service de serviços com pipeline e observabilidade, novos times chegarão ao primeiro deploy mais rápido e com menos suporte manual.
+
+Essa hipótese sugere métricas de tempo, sucesso, suporte e qualidade. Sem hipótese, dashboards acumulam números sem orientar decisões.
+
+## Quatro camadas de métricas
+
+### Adoção
+
+- usuários e times ativos por jornada;
+- proporção de serviços no caminho recomendado;
+- retenção após primeira utilização;
+- versões de templates em uso.
+
+Adoção obrigatória não comprova valor. Segmente uso voluntário, legado migrado e novos serviços.
+
+### Experiência
+
+- taxa de conclusão sem ajuda;
+- tempo ativo e tempo de espera;
+- erros por etapa;
+- tickets e mensagens de suporte;
+- satisfação após uma tarefa específica.
+
+Pesquisas genéricas anuais não substituem feedback próximo da jornada.
+
+### Fluxo de entrega
+
+- tempo até primeiro deploy;
+- lead time de mudanças;
+- frequência de deploy;
+- taxa de falha de mudanças;
+- tempo de recuperação.
+
+A plataforma influencia essas métricas, mas não controla todas as variáveis. Compare coortes e evite reivindicar causalidade sem evidência.
+
+### Operação da plataforma
+
+- disponibilidade e latência das capacidades;
+- sucesso de workflows;
+- backlog de reconciliação;
+- custo por capacidade ou time;
+- incidentes causados pela plataforma.
+
+Essas métricas são necessárias, mas representam saúde do produto, não valor completo.
+
+## Uma árvore simples
+
+```text
+Resultado: reduzir tempo até primeiro deploy
+├── adoção do template recomendado
+├── conclusão sem suporte
+├── duração de cada etapa
+├── falhas de provisionamento
+└── qualidade após o deploy
+```
+
+A árvore evita otimizar velocidade enquanto falhas e suporte aumentam.
+
+## Instrumentação com privacidade
+
+Colete eventos de produto proporcionais à decisão. Prefira identificadores de time ou jornada quando não precisar identificar pessoas. Documente retenção, acesso e finalidade.
+
+## Métricas de vaidade
+
+- total acumulado de logins;
+- quantidade de componentes no catálogo;
+- número de automações executadas;
+- uptime sem sucesso do workflow;
+- quantidade de ferramentas integradas.
+
+Esses números podem fornecer contexto, mas não devem ser objetivos principais.
+
+## Cadência
+
+Revise sinais operacionais semanalmente, jornadas mensalmente e resultados trimestralmente. Combine dados quantitativos com entrevistas e observação. A melhor métrica aponta onde investigar; raramente explica sozinha o que construir.

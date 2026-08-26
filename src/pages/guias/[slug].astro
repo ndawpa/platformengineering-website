@@ -1,0 +1,12 @@
+---
+import { getCollection } from 'astro:content'; import GuideLayout from '../../layouts/GuideLayout.astro';
+export async function getStaticPaths() { const guides = {
+    'kubernetes-troubleshooting': { title: 'Kubernetes Troubleshooting', description: 'Diagnóstico baseado em evidências para workloads Kubernetes.' },
+    'terraform-em-producao': { title: 'Terraform em produção', description: 'Organização, estado e operação segura de infraestrutura como código.' },
+    'gitops-com-argo-cd': { title: 'GitOps com Argo CD', description: 'Reconciliação, repositórios e operação declarativa no Kubernetes.' },
+    'observability-e-sre': { title: 'Observability e SRE', description: 'Objetivos de confiabilidade e sinais orientados à experiência do usuário.' },
+    'cicd-supply-chain': { title: 'CI/CD e software supply chain', description: 'Entrega segura, artefatos verificáveis e identidade de pipelines.' },
+  }; return Object.entries(guides).map(([slug,guide])=>({params:{slug},props:{guide}})); }
+const { guide } = Astro.props; const chapters = (await getCollection('articles',({data})=>!data.draft&&data.series===guide.title)).sort((a,b)=>(a.data.seriesOrder??0)-(b.data.seriesOrder??0));
+---
+<GuideLayout title={guide.title} description={guide.description} chapters={chapters} />

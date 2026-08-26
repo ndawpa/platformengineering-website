@@ -1,0 +1,99 @@
+---
+title: "Segurança da software supply chain: do commit ao deploy"
+description: "Estruture identidade, artefatos, SBOM, assinatura e provenance para reduzir riscos no pipeline de software."
+publishedAt: 2026-08-26
+updatedAt: 2026-08-26
+author: "Platform Engineering Brasil"
+category: "DevSecOps"
+tags: [devsecops, supply-chain, security]
+draft: false
+featured: true
+level: Intermediário
+prerequisites:
+  - Conhecimento básico de CI/CD e containers
+objectives:
+  - Mapear os principais elos da cadeia de software
+  - Tornar artefatos identificáveis e verificáveis
+  - Priorizar controles sem paralisar a entrega
+series: "CI/CD e software supply chain"
+seriesOrder: 1
+sources:
+  - title: "SLSA Specification"
+    url: "https://slsa.dev/spec/"
+  - title: "Sigstore Cosign Documentation"
+    url: "https://docs.sigstore.dev/cosign/"
+revisionNotes: []
+reviewAt: 2027-02-26
+testedWith: []
+---
+
+A software supply chain inclui código, dependências, ferramentas de build, runners, registries, artefatos e mecanismos de deploy. Proteger apenas o repositório deixa vários caminhos para inserir ou substituir software.
+
+## Mapeie o fluxo
+
+```text
+commit → revisão → build → dependências → artefato → registry → deploy
+```
+
+Para cada elo, responda:
+
+- quem pode modificar?
+- qual identidade executa a ação?
+- quais entradas são confiáveis?
+- o resultado é imutável?
+- existe evidência verificável da origem?
+
+## Proteja a origem
+
+Use revisão obrigatória, proteção de branches e ownership para áreas sensíveis. Workflows de CI também são código privilegiado: mudanças neles devem exigir revisão de responsáveis pela plataforma ou segurança.
+
+Evite executar código não confiável em runners persistentes com acesso a secrets.
+
+## Identidade curta no CI
+
+Prefira OIDC e credenciais temporárias a chaves cloud armazenadas como secrets permanentes. Restrinja a confiança por repositório, branch, ambiente e workflow. O job deve receber somente a permissão necessária para aquela etapa.
+
+## Artefatos imutáveis
+
+Construa uma vez e promova o mesmo digest. Tags são referências mutáveis; produção deve conseguir registrar o digest exato:
+
+```text
+ghcr.io/acme/checkout@sha256:4a1d...
+```
+
+Reconstruir para cada ambiente altera a evidência e pode introduzir dependências diferentes.
+
+## SBOM
+
+Uma Software Bill of Materials lista componentes do artefato. Ela melhora resposta a vulnerabilidades, mas não prova que o build é seguro. Gere a SBOM junto do build, associe-a ao digest e controle acesso quando revelar componentes internos.
+
+## Assinatura e verificação
+
+Assinar associa uma identidade a um artefato. A política de admissão deve verificar identidade, issuer e claims esperados — não apenas a presença de qualquer assinatura.
+
+```text
+build autenticado → assinatura → registry → verificação antes do deploy
+```
+
+## Provenance e SLSA
+
+Provenance descreve como e onde um artefato foi produzido. SLSA organiza requisitos progressivos para integridade da cadeia. Use-o como modelo de maturidade, começando por builds automatizados e evidência gerada pelo sistema de build.
+
+## Ordem de implementação
+
+1. Proteja branches e workflows.
+2. Remova credenciais permanentes do CI.
+3. Produza artefatos imutáveis.
+4. Gere SBOM e provenance.
+5. Assine com identidade verificável.
+6. Aplique verificação no deploy.
+7. Exercite revogação e resposta.
+
+## Erros comuns
+
+- assinar uma imagem sem proteger o workflow;
+- confiar em qualquer chave ou identidade;
+- fazer scan sem prazo e owner para correções;
+- promover tags mutáveis;
+- expor secrets a pull requests externos;
+- coletar evidência sem verificá-la no deploy.

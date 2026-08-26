@@ -1,0 +1,91 @@
+---
+title: "SLIs, SLOs e error budgets: um guia prático"
+description: "Defina objetivos de confiabilidade mensuráveis e use error budgets para orientar decisões de produto e operação."
+publishedAt: 2026-08-26
+updatedAt: 2026-08-26
+author: "Platform Engineering Brasil"
+category: "SRE"
+tags: [sre, slo, reliability]
+draft: false
+featured: true
+level: Intermediário
+prerequisites:
+  - Métricas básicas de aplicações
+objectives:
+  - Distinguir SLI, SLO e SLA
+  - Escrever um SLO orientado ao usuário
+  - Calcular e aplicar um error budget
+series: "Observability e SRE"
+seriesOrder: 4
+sources:
+  - title: "Google SRE Workbook — Implementing SLOs"
+    url: "https://sre.google/workbook/implementing-slos/"
+  - title: "Google SRE Workbook — Error Budget Policy"
+    url: "https://sre.google/workbook/error-budget-policy/"
+revisionNotes: []
+reviewAt: 2027-02-26
+testedWith: []
+---
+
+SLOs transformam “o serviço precisa ser confiável” em uma expectativa mensurável. Eles ajudam times a equilibrar estabilidade e velocidade sem buscar disponibilidade infinita.
+
+## Os três conceitos
+
+- **SLI:** medida de uma experiência, como proporção de requisições válidas abaixo de 300 ms.
+- **SLO:** objetivo para o SLI em uma janela, como 99,9% em 28 dias.
+- **SLA:** compromisso contratual, geralmente com consequências quando violado.
+
+Um SLO interno pode ser mais rigoroso que o SLA para oferecer margem operacional.
+
+## Comece pela jornada
+
+Escolha uma interação importante para o usuário: concluir um pagamento, consultar um saldo ou publicar um deploy. Evite começar por CPU e disponibilidade de pods; esses sinais explicam causas, mas não representam diretamente sucesso do usuário.
+
+Exemplo:
+
+> 99,9% das requisições HTTP elegíveis ao checkout devem retornar uma resposta válida em até 500 ms, medidas em uma janela móvel de 28 dias.
+
+A definição precisa esclarecer população, eventos válidos, exclusões e origem da medição.
+
+## Calcule o error budget
+
+O orçamento é a parcela permitida de eventos ruins:
+
+```text
+error budget = 1 - SLO
+```
+
+Para 1.000.000 de eventos e SLO de 99,9%, existem 1.000 eventos ruins disponíveis na janela.
+
+O budget não é uma meta de falha. É um limite para tomar decisões: se o consumo está saudável, a equipe pode aceitar mais mudanças; se está acelerado, precisa reduzir risco e corrigir causas.
+
+## Escolha uma janela
+
+Janelas móveis respondem continuamente ao estado recente. Janelas de calendário se alinham a relatórios, mas criam efeitos de reset. Vinte e oito ou trinta dias são pontos de partida comuns; a escolha deve refletir ciclo de produto e operação.
+
+## Alertas por burn rate
+
+Alertar quando o SLO já foi perdido é tarde. O *burn rate* compara a velocidade de consumo com a velocidade sustentável. Combine uma janela curta, sensível a incidentes rápidos, com uma longa, que reduz ruído.
+
+Alertas devem acionar pessoas apenas quando existe impacto relevante e ação urgente. Dashboards e tickets cobrem sinais menos imediatos.
+
+## Política de error budget
+
+Defina previamente o que acontece quando o orçamento está ameaçado ou esgotado:
+
+- pausar mudanças de alto risco;
+- priorizar correções de confiabilidade;
+- realizar postmortem para grandes consumos;
+- revisar SLI se ele não representar usuários;
+- retomar lançamentos quando condições explícitas forem atendidas.
+
+A política é um mecanismo de decisão, não punição.
+
+## Erros comuns
+
+- SLO de 100%;
+- medir infraestrutura em vez da jornada;
+- excluir falhas inconvenientes sem justificativa;
+- criar dezenas de SLOs sem owner;
+- alertar em toda oscilação;
+- definir objetivo sem política de uso.

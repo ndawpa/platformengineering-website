@@ -1,0 +1,87 @@
+---
+title: "Golden paths: benefícios, riscos e como projetar"
+description: "Crie caminhos recomendados que aceleram equipes sem transformar convenções em uma plataforma rígida."
+publishedAt: 2026-08-26
+updatedAt: 2026-08-26
+author: "Platform Engineering Brasil"
+category: "Platform Engineering"
+tags: [platform-engineering, golden-paths, developer-experience]
+draft: false
+featured: false
+level: Intermediário
+prerequisites:
+  - Conceitos de plataforma interna
+objectives:
+  - Identificar uma boa jornada para um golden path
+  - Projetar defaults seguros e caminhos de escape
+  - Medir adoção sem obrigatoriedade artificial
+series: "Fundamentos de Platform Engineering"
+seriesOrder: 6
+sources:
+  - title: "CNCF Platforms Working Group — Platforms White Paper"
+    url: "https://tag-app-delivery.cncf.io/whitepapers/platforms/"
+revisionNotes: []
+reviewAt: 2027-02-26
+testedWith: []
+---
+
+Um **golden path** é o caminho recomendado para realizar uma tarefa recorrente. Ele reúne padrões que funcionam bem para a maioria dos casos e reduz decisões acidentais, sem proibir necessidades legítimas fora do padrão.
+
+## O que torna um caminho valioso
+
+O caminho precisa terminar em um resultado, não em um repositório pela metade. Para criação de serviços, isso pode incluir pipeline, ambiente, identidade, telemetria, documentação e ownership.
+
+Defaults devem refletir práticas reais da organização:
+
+- runtime e versão suportados;
+- estratégia de build e artefato;
+- requests, limits e probes iniciais;
+- logs e métricas obrigatórios;
+- identidade e políticas mínimas;
+- processo de atualização do template.
+
+## Pavimentado, não murado
+
+O termo *paved road* ajuda: o caminho recomendado deve ser mais fácil porque remove trabalho, não porque alternativas foram bloqueadas. Restrições continuam necessárias para segurança e conformidade, mas devem ser independentes da preferência tecnológica.
+
+Defina três zonas:
+
+1. **Suportado:** experiência completa e suporte do time de plataforma.
+2. **Permitido:** atende guardrails, mas o time consumidor assume mais operação.
+3. **Proibido:** risco inaceitável ou violação regulatória, com justificativa explícita.
+
+## Como projetar
+
+Mapeie uma jornada existente e selecione um segmento de usuário. Identifique decisões repetidas e falhas frequentes. Prototipe o fluxo com poucos times antes de automatizar todas as variações.
+
+```text
+Intenção → validação → provisionamento → feedback → operação → evolução
+```
+
+O feedback deve atravessar todo o caminho. Quando uma política falha, o usuário precisa saber onde corrigir. Quando o provisionamento demora, deve existir estado consultável.
+
+## Versionamento
+
+Templates copiados acumulam drift. Planeje desde o início como propagar correções: automações que abrem pull requests, componentes compartilhados ou contratos versionados. Uma atualização de segurança não pode depender de cada equipe descobrir a mudança.
+
+## Como medir
+
+- taxa de conclusão sem suporte;
+- tempo até o resultado;
+- pontos de abandono;
+- alterações feitas imediatamente após a geração;
+- taxa de atualização dos consumidores;
+- incidentes relacionados aos defaults.
+
+Uma baixa adoção é sinal para investigação, não justificativa automática para obrigatoriedade.
+
+## Riscos comuns
+
+- caminho otimizado para um único time;
+- abstrações que escondem falhas importantes;
+- falta de escape hatch;
+- catálogo de templates sem manutenção;
+- métricas baseadas apenas em criações;
+- promessa de suporte maior que a capacidade do time.
+
+Um golden path saudável é opinativo, observável, versionado e substituível. Ele comprime conhecimento organizacional sem remover a responsabilidade de engenharia.

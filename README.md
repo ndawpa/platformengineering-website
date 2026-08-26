@@ -106,6 +106,11 @@ sources:
 revisionNotes:
   - date: 2026-08-25
     note: "O que mudou nesta revisão."
+reviewedBy: "Equipe editorial"
+reviewAt: 2027-02-26
+testedWith:
+  - "Kubernetes 1.35"
+labRepository: "https://github.com/example/lab"
 ---
 ```
 
@@ -114,6 +119,12 @@ Defina `draft: false` apenas depois da revisão técnica e editorial. O schema �
 Componentes MDX, como `Callout`, podem ser importados de `src/components`. Mantenha Markdown simples quando um componente não agregar semântica.
 
 `level`, objetivos e fontes aparecem na página. Artigos com a mesma `series` recebem navegação anterior/próximo conforme `seriesOrder`. Cada artigo gera uma imagem social PNG em `/og/<id>.png` durante o build.
+
+`reviewAt` torna a revisão periódica obrigatória: a auditoria editorial falha quando a data vence. Use `testedWith` apenas para versões realmente verificadas e `labRepository` quando houver um laboratório reproduzível.
+
+## Roadmap editorial
+
+Todos os clusters e pautas planejados ficam em `src/config/editorial.ts` e são apresentados publicamente em `/roadmap/editorial/`. Registrar uma pauta não a transforma em artigo: apenas conteúdos pesquisados e revisados devem receber `draft: false`.
 
 ## Como criar uma categoria
 

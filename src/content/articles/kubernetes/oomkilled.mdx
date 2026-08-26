@@ -1,0 +1,92 @@
+---
+title: "Como diagnosticar OOMKilled no Kubernetes"
+description: "Investigue containers encerrados por falta de memória e ajuste recursos com evidências, não tentativas."
+publishedAt: 2026-08-26
+updatedAt: 2026-08-26
+author: "Platform Engineering Brasil"
+category: "Kubernetes"
+tags: [kubernetes, troubleshooting, memory]
+draft: false
+featured: true
+level: Intermediário
+prerequisites:
+  - Acesso ao cluster com kubectl
+  - Noções de requests e limits
+objectives:
+  - Confirmar OOMKilled no último estado
+  - Distinguir limite do container e pressão no node
+  - Definir uma correção orientada por telemetria
+series: "Kubernetes Troubleshooting"
+seriesOrder: 2
+sources:
+  - title: "Kubernetes — Resource Management for Pods and Containers"
+    url: "https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/"
+revisionNotes: []
+reviewAt: 2027-02-26
+testedWith: ["Kubernetes 1.35", "kubectl 1.35"]
+---
+
+`OOMKilled` significa que o processo foi encerrado pelo mecanismo de falta de memória. Em Kubernetes, o caso mais comum é o container ultrapassar seu `memory.limit`, mas pressão de memória no node e processos filhos também precisam ser considerados.
+
+## Confirme a evidência
+
+Consulte o último estado do container:
+
+```bash
+kubectl get pod checkout-7f6d9 -n producao \
+  -o jsonpath='{range .status.containerStatuses[*]}{.name}{"\t"}{.lastState.terminated.reason}{"\t"}{.lastState.terminated.exitCode}{"\n"}{end}'
+```
+
+`OOMKilled` normalmente aparece com código 137. O código sozinho não prova a causa, pois também representa outros `SIGKILL`.
+
+Colete descrição, eventos e logs anteriores:
+
+```bash
+kubectl describe pod checkout-7f6d9 -n producao
+kubectl logs checkout-7f6d9 -n producao -c api --previous --timestamps
+kubectl get events -n producao --sort-by='.lastTimestamp'
+```
+
+## Compare uso e configuração
+
+Confira os recursos efetivos:
+
+```bash
+kubectl get pod checkout-7f6d9 -n producao \
+  -o jsonpath='{range .spec.containers[*]}{.name}{" request="}{.resources.requests.memory}{" limit="}{.resources.limits.memory}{"\n"}{end}'
+```
+
+Use séries históricas, não apenas `kubectl top`. O pico que causou a morte já passou quando você consulta o pod. Observe working set, RSS, cache, taxa de crescimento e correlação com tráfego ou jobs.
+
+## Limite do container ou pressão do node?
+
+Se o container excedeu seu próprio limite, o último estado tende a indicar `OOMKilled`. Se o node está sob pressão, examine condições e eventos:
+
+```bash
+kubectl describe node worker-03
+kubectl get node worker-03 -o jsonpath='{.status.conditions}'
+```
+
+Procure `MemoryPressure`, evictions e outros workloads competindo no mesmo período.
+
+## Escolha a correção
+
+Não aumente o limite automaticamente. Primeiro classifique o comportamento:
+
+- **pico legítimo:** ajuste concorrência, streaming ou limite com margem conhecida;
+- **crescimento contínuo:** investigue leak e retenção;
+- **cache sem limite:** imponha tamanho e política de descarte;
+- **heap mal configurado:** alinhe runtime ao limite do container;
+- **node saturado:** reveja requests, bin packing e capacidade.
+
+Para aplicações gerenciadas, configure o heap abaixo do limite total: memória nativa, threads e buffers também consomem o cgroup.
+
+## Checklist operacional
+
+1. Preserve logs e último estado.
+2. Confirme container, reason e exit code.
+3. Compare limite com histórico de uso.
+4. Verifique pressão e eventos do node.
+5. Correlacione com deploy, tráfego e jobs.
+6. Aplique uma hipótese por vez.
+7. Acompanhe reinícios, latência e memória após a mudança.
