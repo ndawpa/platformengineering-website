@@ -124,12 +124,18 @@ jobs:
             rbac-serviceaccounts) kubectl patch role pod-viewer -n pe-rbac --type=json -p='[{"op":"add","path":"/rules/0/verbs/-","value":"list"}]' ;;
             rollout-rollback) : ;;
             scheduling-recursos) kubectl get pod worker -n pe-scheduling -o yaml | sed 's/workload: nonexistent/workload: applications/' | kubectl replace --force -f - ;;
-            services-dns) kubectl patch service api -n pe-network --type=merge -p '{"spec":{"selector":{"app":"api"}}}' ;;
+            services-dns)
+              kubectl patch service api -n pe-network --type=merge -p '{"spec":{"selector":{"app":"api"}}}'
+              kubectl rollout status deployment/api -n pe-network --timeout=120s
+              kubectl wait --for=condition=Ready pod/client -n pe-network --timeout=120s
+              ;;
             storage-pvc) : ;;
             incidente-api-multifalha)
               kubectl patch configmap api-config -n pe-incident --type=merge -p '{"data":{"API_ENDPOINT":"http://api.pe-incident.svc"}}'
               kubectl patch deployment api -n pe-incident --type=json -p='[{"op":"replace","path":"/spec/template/spec/containers/0/readinessProbe/httpGet/path","value":"/"}]'
               kubectl patch service api -n pe-incident --type=merge -p '{"spec":{"selector":{"app":"api"}}}'
+              kubectl rollout status deployment/api -n pe-incident --timeout=120s
+              kubectl wait --for=condition=Ready pod/client -n pe-incident --timeout=120s
               ;;
           esac
           make verify

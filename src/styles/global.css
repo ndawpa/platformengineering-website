@@ -37,3 +37,11 @@ body { @apply min-h-screen bg-slate-50 text-slate-800 antialiased dark:bg-ink-95
 .prose-tech th, .prose-tech td { @apply border border-slate-300 px-4 py-3 text-left dark:border-slate-700; }
 .heading-anchor { @apply ml-2 text-slate-300 no-underline opacity-0 transition-opacity dark:text-slate-600; }
 .prose-tech h2:hover .heading-anchor, .prose-tech h3:hover .heading-anchor, .heading-anchor:focus { @apply opacity-100; }
+
+/* Keep utility combinations used for metadata and primary actions above WCAG AA in light mode. */
+:root:not(.dark) .text-slate-400 { color: #64748b; }
+:root:not(.dark) .bg-sky-600.text-white { background-color: #0369a1; }
+:root:not(.dark) .border-sky-200 .text-teal-600 { color: #0f766e; }
+:root:not(.dark) .border-sky-200 .text-sky-600 { color: #0369a1; }
+h1 > .text-transparent { background-image: linear-gradient(to right, #0369a1, #0f766e); }
+:root.dark h1 > .text-transparent { background-image: linear-gradient(to right, #38bdf8, #2dd4bf); }
