@@ -1,0 +1,47 @@
+---
+title: "Instalar Helm e validar charts"
+description: "Instale o cliente Helm, entenda releases e namespaces e valide charts localmente antes de alterar um cluster."
+tool: "Helm"
+order: 5
+platforms: ["Linux", "macOS", "Windows"]
+prerequisites: ["kubectl configurado", "Um cluster local ativo para o smoke test"]
+officialDocs: "https://helm.sh/docs/intro/install/"
+verifiedAt: 2026-08-27
+draft: false
+---
+## Instalar
+
+```bash
+# macOS ou Linux com Homebrew
+brew install helm
+
+# Windows
+winget install Helm.Helm
+
+helm version
+```
+
+No Linux sem Homebrew, use o gerenciador documentado para sua distribuição ou baixe uma release oficial e valide o checksum.
+
+## Validar antes de instalar
+
+No repositório do portal:
+
+```bash
+helm lint charts/platformengineering --strict
+helm template portal charts/platformengineering --namespace portal
+helm upgrade --install portal charts/platformengineering \
+  --namespace portal --create-namespace --dry-run
+```
+
+`lint` verifica o chart; `template` permite revisar YAML sem conversar com o cluster; `--dry-run` adiciona validações que dependem do API server.
+
+## Ciclo de uma release
+
+```bash
+helm list --all-namespaces
+helm history portal -n portal
+helm get values portal -n portal
+helm rollback portal 1 -n portal
+helm uninstall portal -n portal
+```

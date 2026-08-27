@@ -1,0 +1,53 @@
+---
+title: "Links, inodes e backup com tar"
+description: "Compare links simbólicos e físicos e produza um arquivo compactado preservando uma árvore de configuração."
+category: "Linux"
+level: "Iniciante"
+duration: 30
+updatedAt: 2026-08-26
+prerequisites: ["Docker, Git e Make"]
+objectives: ["Distinguir symlink e hard link", "Inspecionar inodes", "Criar e listar um tar.gz"]
+tools: ["Ubuntu", "ln", "stat", "tar"]
+certifications: ["LFCS"]
+certificationDomain: "Storage e Essential Commands"
+testedWith: ["Ubuntu 24.04"]
+repositoryPath: "labs/linux/arquivos-links"
+format: "Desafio"
+scenario: "Uma árvore de configuração precisa de atalhos coerentes, deduplicação por inode e backup compactado verificável."
+successCriteria: ["Symlink relativo válido", "Hard link compartilha inode", "Archive contém a árvore completa"]
+constraints: ["Não duplicar data.txt", "Não usar caminhos absolutos no symlink", "Não alterar os arquivos fonte"]
+draft: false
+featured: false
+---
+## Preparar e investigar
+```bash
+git clone https://github.com/ndawpa/platformengineering-website.git
+cd platformengineering-website/labs/linux/arquivos-links
+make setup
+make shell
+cd /work
+find source -maxdepth 3 -ls
+```
+
+## Resolver o desafio
+
+Crie um symlink relativo, um hard link e um archive comprimido. Registre e compare inodes, tamanho aparente e destino dos links antes de validar.
+
+<details>
+<summary>Dicas e solução de referência</summary>
+
+```bash
+ln -s config/environment source/current-config
+ln source/data.txt source/data.hardlink
+stat source/data.txt source/data.hardlink
+tar -czf backup/source.tar.gz source
+tar -tzf backup/source.tar.gz
+```
+</details>
+
+## Validar e limpar
+```bash
+exit
+make verify
+make cleanup
+```

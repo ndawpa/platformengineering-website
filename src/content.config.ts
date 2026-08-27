@@ -41,13 +41,32 @@ const labs = defineCollection({
     prerequisites: z.array(z.string()).default([]),
     objectives: z.array(z.string()).default([]),
     tools: z.array(z.string()).default([]),
-    certifications: z.array(z.enum(['CKA', 'CKAD', 'CKS'])).default([]),
+    certifications: z.array(z.enum(['CKA', 'CKAD', 'CKS', 'LFCS'])).default([]),
     certificationDomain: z.string().optional(),
     testedWith: z.array(z.string()).default([]),
     repositoryPath: z.string(),
+    format: z.enum(['Guiado', 'Desafio', 'Incidente']),
+    scenario: z.string().max(240),
+    successCriteria: z.array(z.string()).min(2),
+    constraints: z.array(z.string()).min(1),
     draft: z.boolean().default(false),
     featured: z.boolean().default(false),
   }),
 });
 
-export const collections = { articles, labs };
+const getStarted = defineCollection({
+  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/get-started' }),
+  schema: z.object({
+    title: z.string(),
+    description: z.string().max(180),
+    tool: z.string(),
+    order: z.number().int().positive(),
+    platforms: z.array(z.enum(['Linux', 'macOS', 'Windows'])),
+    prerequisites: z.array(z.string()).default([]),
+    officialDocs: z.url(),
+    verifiedAt: z.coerce.date(),
+    draft: z.boolean().default(false),
+  }),
+});
+
+export const collections = { articles, labs, getStarted };

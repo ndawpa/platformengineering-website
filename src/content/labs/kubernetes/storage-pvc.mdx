@@ -12,6 +12,10 @@ certifications: ["CKA", "CKAD"]
 certificationDomain: "Storage e Application Design"
 testedWith: ["Kubernetes 1.34"]
 repositoryPath: "labs/kubernetes/storage-pvc"
+format: "Desafio"
+scenario: "Um processo grava estado que deve sobreviver à substituição do pod e ser recuperado pelo workload seguinte."
+successCriteria: ["PVC Bound", "Dados legíveis após recriação", "Claim não é recriado"]
+constraints: ["Não copiar dados para o host", "Não usar hostPath", "Não excluir o PVC durante o teste"]
 draft: false
 featured: true
 ---
@@ -27,12 +31,17 @@ kubectl get storageclass,pv,pvc -n pe-storage
 kubectl describe pvc data -n pe-storage
 kubectl exec -n pe-storage writer -- cat /data/message.txt
 ```
+<details>
+<summary>Dica e solução de referência</summary>
+
 Exclua e recrie somente o pod usando o manifesto; o claim permanece:
 ```bash
 kubectl delete pod writer -n pe-storage
 kubectl apply -f exercise.yaml
 make verify
 ```
+</details>
+
 ## Limpar
 ```bash
 make cleanup

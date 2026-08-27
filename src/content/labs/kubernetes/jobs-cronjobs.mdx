@@ -12,6 +12,10 @@ certifications: ["CKAD"]
 certificationDomain: "Application Design and Build"
 testedWith: ["Kubernetes 1.34"]
 repositoryPath: "labs/kubernetes/jobs-cronjobs"
+format: "Desafio"
+scenario: "Uma rotina de relatório precisa concluir uma vez e um heartbeat periódico deve operar sem acumular histórico indefinidamente."
+successCriteria: ["Job completo", "Execução manual do CronJob completa", "CronJob ativo com histórico limitado"]
+constraints: ["Não converter em Deployment", "Preservar restartPolicy Never", "Não executar comandos fora do namespace"]
 draft: false
 featured: false
 ---
@@ -23,7 +27,10 @@ make setup
 kubectl get jobs,cronjobs,pods -n pe-jobs
 kubectl logs -n pe-jobs job/report
 ```
-O CronJob começa suspenso. Inspecione agenda, concorrência e históricos:
+O CronJob começa suspenso. Inspecione agenda, concorrência e históricos e tente ativá-lo e disparar uma execução imediata antes de abrir a solução.
+
+<details>
+<summary>Dicas e solução de referência</summary>
 ```bash
 kubectl describe cronjob heartbeat -n pe-jobs
 kubectl patch cronjob heartbeat -n pe-jobs --type=merge -p '{"spec":{"suspend":false}}'
@@ -31,6 +38,8 @@ kubectl create job --from=cronjob/heartbeat heartbeat-manual -n pe-jobs
 kubectl logs -n pe-jobs job/heartbeat-manual
 make verify
 ```
+</details>
+
 ## Limpar
 ```bash
 make cleanup

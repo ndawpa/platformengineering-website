@@ -12,6 +12,10 @@ certifications: ["CKS"]
 certificationDomain: "Container security fundamentals"
 testedWith: ["Docker 28", "Docker Compose 2.39"]
 repositoryPath: "labs/docker/container-seguro"
+format: "Guiado"
+scenario: "Uma aplicação HTTP deve operar com filesystem imutável, usuário não-root e nenhuma capability Linux adicional."
+successCriteria: ["Healthcheck saudável", "UID diferente de zero", "Escrita na raiz bloqueada"]
+constraints: ["Não usar privileged", "Não desabilitar o healthcheck", "Remover todas as capabilities"]
 draft: false
 featured: true
 ---
@@ -34,3 +38,10 @@ A raiz é somente leitura, mas `/tmp` é um `tmpfs` gravável. O processo usa UI
 ```bash
 make cleanup
 ```
+
+<details>
+<summary>Desafio de extensão</summary>
+
+Remova um controle por vez (`read_only`, `no-new-privileges`, `cap_drop`), registre o comportamento observado e restaure-o. Gere uma tabela ligando cada controle à ameaça mitigada e valide novamente sem usar `privileged`.
+
+</details>

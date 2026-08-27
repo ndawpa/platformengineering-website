@@ -1,0 +1,52 @@
+---
+title: "Criar um ambiente local com Minikube"
+description: "Instale Minikube, escolha conscientemente o driver, habilite addons e valide serviços e recursos do cluster."
+tool: "Minikube"
+order: 4
+platforms: ["Linux", "macOS", "Windows"]
+prerequisites: ["kubectl instalado", "Docker ou outro driver de virtualização", "2 CPUs, 4 GB de memória e 20 GB de disco"]
+officialDocs: "https://minikube.sigs.k8s.io/docs/start/"
+verifiedAt: 2026-08-27
+draft: false
+---
+## Quando escolher Minikube
+
+Minikube é conveniente para desenvolvimento local, addons e recursos que se beneficiam de uma experiência integrada. Para CI e clusters descartáveis multi-node, kind costuma ser mais simples.
+
+## Instalar
+
+No macOS e Linux com Homebrew:
+
+```bash
+brew install minikube
+minikube version
+```
+
+No Windows use `winget install Kubernetes.minikube`. A documentação oficial também fornece binários e pacotes por arquitetura.
+
+## Iniciar um perfil explícito
+
+```bash
+minikube start --profile estudos --driver=docker --cpus=2 --memory=4096
+minikube profile estudos
+kubectl get nodes
+minikube status --profile estudos
+```
+
+## Addons e acesso a serviços
+
+```bash
+minikube addons list --profile estudos
+minikube addons enable metrics-server --profile estudos
+kubectl top nodes
+```
+
+Para um Service NodePort, prefira `minikube service NOME --url` em vez de assumir que o IP é acessível em todos os sistemas.
+
+## Diagnóstico e limpeza
+
+```bash
+minikube logs --profile estudos
+minikube stop --profile estudos
+minikube delete --profile estudos
+```

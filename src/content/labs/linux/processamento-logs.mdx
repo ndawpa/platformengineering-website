@@ -1,0 +1,45 @@
+---
+title: "Processamento de logs com grep e awk"
+description: "Filtre um access log, agregue códigos HTTP e produza um relatório determinístico usando pipelines Unix."
+category: "Linux"
+level: "Iniciante"
+duration: 25
+updatedAt: 2026-08-26
+prerequisites: ["Docker, Git e Make", "Shell básico"]
+objectives: ["Combinar grep, sort e uniq", "Selecionar campos com awk", "Produzir saída verificável"]
+tools: ["Ubuntu", "grep", "awk", "sort"]
+certifications: ["LFCS"]
+certificationDomain: "Essential Commands"
+testedWith: ["Ubuntu 24.04"]
+repositoryPath: "labs/linux/texto-logs"
+format: "Desafio"
+scenario: "Um incidente exige quantificar respostas HTTP com erro a partir de logs brutos, sem planilha ou linguagem externa."
+successCriteria: ["Contagem de 500 correta", "Contagem de 404 correta", "Relatório determinístico"]
+constraints: ["Usar ferramentas Unix", "Não editar o log original", "Não contar respostas 2xx"]
+draft: false
+featured: false
+---
+## Executar o desafio
+```bash
+git clone https://github.com/ndawpa/platformengineering-website.git
+cd platformengineering-website/labs/linux/texto-logs
+make setup
+make shell
+cat /work/access.log
+```
+Crie `/work/report.txt` contendo apenas erros HTTP, agregados no formato `código quantidade`. O resultado esperado contém `500 2` e `404 1`.
+Antes da solução, produza duas implementações: uma com `awk` e outra combinando `cut`, `sort` e `uniq`. Compare legibilidade e número de processos.
+
+<details>
+<summary>Dica e solução de referência</summary>
+```bash
+awk '$4 >= 400 { count[$4]++ } END { for (code in count) print code, count[code] }' /work/access.log | sort > /work/report.txt
+```
+</details>
+
+## Validar e limpar
+```bash
+exit
+make verify
+make cleanup
+```

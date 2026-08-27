@@ -12,6 +12,10 @@ certifications: ["CKAD"]
 certificationDomain: "Configuração, segurança e observabilidade"
 testedWith: ["Kubernetes 1.34"]
 repositoryPath: "labs/kubernetes/configuracao-probes"
+format: "Desafio"
+scenario: "A aplicação executa, mas permanece fora dos endpoints após uma alteração de configuração e health check."
+successCriteria: ["Pod Ready", "ConfigMap e Secret injetados", "Readiness valida uma rota real"]
+constraints: ["Não remover probes", "Não imprimir o Secret", "Não substituir a imagem"]
 draft: false
 featured: false
 ---
@@ -52,6 +56,9 @@ kubectl exec -n pe-config deployment/config-api -- cat /usr/share/nginx/html/ind
 
 Secrets Kubernetes não são cofres: evite exibir seus valores em terminal ou logs.
 
+<details>
+<summary>Solução de referência: corrigir e verificar</summary>
+
 ## Corrigir e verificar
 
 ```bash
@@ -60,6 +67,8 @@ kubectl patch deployment config-api -n pe-config --type=json -p='[
 ]'
 make verify
 ```
+
+</details>
 
 ## Limpar
 

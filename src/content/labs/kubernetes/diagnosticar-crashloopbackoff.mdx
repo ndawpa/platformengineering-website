@@ -23,6 +23,10 @@ testedWith:
   - "kind 0.30"
   - "Kubernetes 1.34"
 repositoryPath: "labs/kubernetes/crashloopbackoff"
+format: "Desafio"
+scenario: "Uma API reinicia continuamente após uma mudança de configuração; restaure o workload preservando o histórico de diagnóstico."
+successCriteria: ["Deployment disponível", "Novo pod sem reinícios", "Causa sustentada por logs e eventos"]
+constraints: ["Não trocar a imagem", "Não apagar o cluster", "Confirmar o contexto antes de alterar recursos"]
 draft: false
 featured: true
 ---
@@ -96,6 +100,9 @@ kubectl logs -n pe-lab -l app=broken-api --previous
 
 Você deve encontrar uma tentativa de executar `/app/start.sh` e a mensagem de que o arquivo não existe. A imagem foi iniciada corretamente; o erro está no comando configurado pelo Deployment.
 
+<details>
+<summary>Dica progressiva e solução de referência</summary>
+
 ## Checkpoint 3: corrigir o workload
 
 Inspecione primeiro a configuração que será alterada:
@@ -119,6 +126,8 @@ Espere pelo novo rollout:
 ```bash
 kubectl rollout status deployment/broken-api -n pe-lab --timeout=90s
 ```
+
+</details>
 
 ## Validar o resultado
 

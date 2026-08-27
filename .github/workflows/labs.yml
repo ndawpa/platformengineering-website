@@ -1,0 +1,135 @@
+name: Labs
+
+on:
+  pull_request:
+    paths:
+      - 'labs/**'
+      - 'src/content/labs/**'
+      - 'scripts/check-labs.mjs'
+      - '.github/workflows/labs.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'labs/**'
+      - 'src/content/labs/**'
+      - 'scripts/check-labs.mjs'
+      - '.github/workflows/labs.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  static-validation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run check:labs
+      - name: Validate shell syntax
+        run: find labs -type f -name '*.sh' -print0 | xargs -0 -r -n1 bash -n
+      - name: Validate Makefiles render
+        run: |
+          for directory in labs/kubernetes/*/ labs/docker/*/ labs/linux/*/; do
+            [[ -f "${directory}Makefile" ]] || continue
+            make -C "$directory" -n setup verify cleanup >/dev/null
+          done
+
+  docker-labs:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        lab: [multistage, networks, volumes, container-seguro]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Execute lab
+        working-directory: labs/docker/${{ matrix.lab }}
+        run: |
+          trap 'make cleanup' EXIT
+          make setup
+          make verify
+
+  linux-labs:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        lab: [permissoes, processos-sinais, texto-logs, networking, arquivos-links, shell-script]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare lab
+        working-directory: labs/linux/${{ matrix.lab }}
+        run: make setup
+      - name: Apply reference solution
+        working-directory: labs/linux/${{ matrix.lab }}
+        shell: bash
+        run: |
+          case '${{ matrix.lab }}' in
+            permissoes)
+              docker exec pe-linux-permissoes bash -c 'usermod -aG platform ana; usermod -aG platform bruno; chown -R root:platform /work/projeto; chmod 2770 /work/projeto; chmod 660 /work/projeto/config.txt'
+              ;;
+            processos-sinais)
+              docker exec pe-linux-processos bash -c 'kill -TERM "$(cat /work/worker.pid)"; sleep 1'
+              ;;
+            texto-logs)
+              docker exec pe-linux-texto-logs bash -c "awk '\$4 >= 400 { count[\$4]++ } END { for (code in count) print code, count[code] }' /work/access.log | sort > /work/report.txt"
+              ;;
+            networking)
+              docker exec pe-linux-networking bash -c '{ hostname; getent hosts api.internal; ip route; ss -lnt; curl -s http://api.internal:8080; } > /work/diagnostico.txt'
+              ;;
+            arquivos-links)
+              docker exec pe-linux-arquivos-links bash -c 'cd /work; ln -s config/environment source/current-config; ln source/data.txt source/data.hardlink; tar -czf backup/source.tar.gz source'
+              ;;
+            shell-script)
+              docker exec pe-linux-shell-script bash -c 'cp /lab/solution.sh /work/check-services.sh; chmod +x /work/check-services.sh'
+              ;;
+          esac
+      - name: Verify lab
+        working-directory: labs/linux/${{ matrix.lab }}
+        run: make verify
+      - name: Cleanup
+        if: always()
+        working-directory: labs/linux/${{ matrix.lab }}
+        run: make cleanup
+
+  kubernetes-labs:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        lab: [crashloopbackoff, configuracao-probes, init-sidecar, jobs-cronjobs, pod-security, rbac-serviceaccounts, rollout-rollback, scheduling-recursos, services-dns, storage-pvc, incidente-api-multifalha]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: helm/kind-action@v1
+        with:
+          install_only: true
+      - name: Execute scenario
+        working-directory: labs/kubernetes/${{ matrix.lab }}
+        shell: bash
+        run: |
+          trap 'make cleanup || true; make destroy || true' EXIT
+          make setup
+          case '${{ matrix.lab }}' in
+            crashloopbackoff) kubectl patch deployment broken-api -n pe-lab --type=json -p='[{"op":"replace","path":"/spec/template/spec/containers/0/command","value":["sh","-c","echo API iniciada; sleep 3600"]}]' ;;
+            configuracao-probes) kubectl patch deployment config-api -n pe-config --type=json -p='[{"op":"replace","path":"/spec/template/spec/containers/0/readinessProbe/httpGet/path","value":"/"}]' ;;
+            init-sidecar) : ;;
+            jobs-cronjobs) kubectl patch cronjob heartbeat -n pe-jobs --type=merge -p '{"spec":{"suspend":false}}' ;;
+            pod-security) kubectl apply -f compliant-pod.yaml ;;
+            rbac-serviceaccounts) kubectl patch role pod-viewer -n pe-rbac --type=json -p='[{"op":"add","path":"/rules/0/verbs/-","value":"list"}]' ;;
+            rollout-rollback) : ;;
+            scheduling-recursos) kubectl get pod worker -n pe-scheduling -o yaml | sed 's/workload: nonexistent/workload: applications/' | kubectl replace --force -f - ;;
+            services-dns) kubectl patch service api -n pe-network --type=merge -p '{"spec":{"selector":{"app":"api"}}}' ;;
+            storage-pvc) : ;;
+            incidente-api-multifalha)
+              kubectl patch configmap api-config -n pe-incident --type=merge -p '{"data":{"API_ENDPOINT":"http://api.pe-incident.svc"}}'
+              kubectl patch deployment api -n pe-incident --type=json -p='[{"op":"replace","path":"/spec/template/spec/containers/0/readinessProbe/httpGet/path","value":"/"}]'
+              kubectl patch service api -n pe-incident --type=merge -p '{"spec":{"selector":{"app":"api"}}}'
+              ;;
+          esac
+          make verify

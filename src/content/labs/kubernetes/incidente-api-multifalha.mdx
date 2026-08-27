@@ -1,0 +1,130 @@
+---
+title: "Incidente Kubernetes com múltiplas falhas"
+description: "Restaure uma API afetada por erros encadeados de configuração, readiness e descoberta de serviço sem receber a sequência pronta."
+category: "Kubernetes"
+level: "Avançado"
+duration: 75
+updatedAt: 2026-08-27
+prerequisites: ["Get Started de Docker, kubectl e kind concluído", "Experiência com Deployments, ConfigMaps, probes, Services e EndpointSlices"]
+objectives: ["Conduzir triagem baseada em impacto", "Corrigir falhas encadeadas sem recriar o ambiente", "Validar o caminho completo do cliente ao pod"]
+tools: ["kind", "kubectl", "events", "EndpointSlice"]
+certifications: ["CKA", "CKAD"]
+certificationDomain: "Troubleshooting, configuração e networking"
+testedWith: ["Kubernetes 1.34"]
+repositoryPath: "labs/kubernetes/incidente-api-multifalha"
+format: "Incidente"
+scenario: "Uma API está totalmente indisponível após uma mudança com falhas encadeadas de configuração, saúde e descoberta de serviço."
+successCriteria: ["Duas réplicas disponíveis", "Service com endpoints", "Cliente recebe API operacional"]
+constraints: ["Não trocar imagem ou réplicas", "Alterar apenas ConfigMap, readiness e selector", "Preservar evidências"]
+draft: false
+featured: true
+---
+
+## Cenário do incidente
+
+Uma API deveria ter duas réplicas disponíveis no namespace `pe-incident`. Clientes internos relatam indisponibilidade total. Uma mudança foi aplicada, mas você não recebeu o diff. Há mais de uma falha e corrigir o primeiro sintoma não encerra o incidente.
+
+Critérios de sucesso:
+
+- duas réplicas disponíveis;
+- nenhuma alteração na imagem ou no número de réplicas;
+- Service com endpoints prontos;
+- `client` acessa `http://api` e recebe `API operacional`;
+- mudanças limitadas a ConfigMap, readiness probe e selector do Service.
+
+## Preparar o ambiente
+
+```bash
+git clone https://github.com/ndawpa/platformengineering-website.git
+cd platformengineering-website/labs/kubernetes/incidente-api-multifalha
+make setup
+kubectl config current-context
+```
+
+Confirme `kind-pe-k8s-labs`. Inicie um cronômetro de 60 minutos e não leia a solução até concluir sua investigação.
+
+## Fase 1: triagem
+
+Construa uma visão do impacto antes de editar recursos:
+
+```bash
+kubectl get all -n pe-incident
+kubectl get events -n pe-incident --sort-by=.lastTimestamp
+kubectl describe deployment api -n pe-incident
+kubectl get pods -n pe-incident -o wide
+```
+
+Registre para cada hipótese: evidência, comando usado e mudança mínima proposta. Não delete pods manualmente para “tentar de novo”; controllers já fazem reconciliação.
+
+## Fase 2: configuração do workload
+
+Identifique por que os containers não iniciam. Compare as referências do Deployment com as chaves existentes no ConfigMap:
+
+```bash
+kubectl get deployment api -n pe-incident -o yaml
+kubectl get configmap api-config -n pe-incident -o yaml
+```
+
+Faça a menor correção possível. A API endpoint esperada para este ambiente é `http://api.pe-incident.svc`.
+
+Depois acompanhe o rollout. Um novo problema deve aparecer: pods executam, mas não ficam prontos.
+
+## Fase 3: saúde da aplicação
+
+Separe processo vivo de instância pronta:
+
+```bash
+kubectl describe pod -n pe-incident -l app=api
+kubectl logs -n pe-incident -l app=api --prefix
+kubectl exec -n pe-incident deployment/api -- wget -S -qO- http://localhost/
+```
+
+Corrija somente a readiness probe. Não remova a probe para fazer o rollout “ficar verde”.
+
+## Fase 4: descoberta e tráfego
+
+Quando o Deployment estiver disponível, teste de dentro do cliente:
+
+```bash
+kubectl exec -n pe-incident client -- nslookup api
+kubectl exec -n pe-incident client -- wget -S -qO- -T 3 http://api
+kubectl get service,endpointslice -n pe-incident -o wide
+kubectl get pods -n pe-incident --show-labels
+```
+
+DNS resolvendo não significa que o Service possui backends. Relacione selector, labels e EndpointSlice antes de alterar qualquer porta.
+
+## Validar e produzir evidências
+
+```bash
+make verify
+kubectl get deployment,service,endpointslice,pods -n pe-incident -o wide
+kubectl get events -n pe-incident --sort-by=.lastTimestamp | tail -20
+```
+
+Escreva um resumo com causa imediata, fatores contribuintes, impacto, detecção e ações preventivas. Uma resposta madura menciona validação de referências de ConfigMap, testes de probes e verificação de selectors no CI.
+
+<details>
+<summary>Solução de referência</summary>
+
+```bash
+kubectl patch configmap api-config -n pe-incident --type=merge \
+  -p '{"data":{"API_ENDPOINT":"http://api.pe-incident.svc"}}'
+
+kubectl patch deployment api -n pe-incident --type=json -p='[
+  {"op":"replace","path":"/spec/template/spec/containers/0/readinessProbe/httpGet/path","value":"/"}
+]'
+
+kubectl patch service api -n pe-incident --type=merge \
+  -p '{"spec":{"selector":{"app":"api"}}}'
+
+make verify
+```
+
+</details>
+
+## Limpar
+
+```bash
+make cleanup
+```

@@ -1,0 +1,52 @@
+---
+title: "Instalar Docker e validar o runtime"
+description: "Prepare Docker Engine ou Docker Desktop e confirme arquitetura, Compose, rede, volumes e execução sem sudo antes dos labs."
+tool: "Docker"
+order: 1
+platforms: ["Linux", "macOS", "Windows"]
+prerequisites: ["Virtualização habilitada", "Acesso administrativo para instalar software"]
+officialDocs: "https://docs.docker.com/engine/install/"
+verifiedAt: 2026-08-27
+draft: false
+---
+## Escolher a instalação
+
+No Linux, prefira Docker Engine pelo repositório oficial da sua distribuição. Em macOS e Windows, Docker Desktop é o caminho mais simples. No Windows com WSL 2, habilite a integração apenas para a distribuição em que executará os labs.
+
+Evite scripts de conveniência em ambientes corporativos sem antes revisar seu conteúdo. Siga a [matriz oficial por sistema](https://docs.docker.com/engine/install/).
+
+## Validar cliente, daemon e Compose
+
+```bash
+docker version
+docker info
+docker compose version
+docker run --rm hello-world
+```
+
+`docker version` deve mostrar as seções Client e Server. Se apenas Client aparecer, o daemon não está acessível.
+
+## Linux sem sudo
+
+Adicionar seu usuário ao grupo `docker` equivale a conceder privilégios administrativos sobre o host. Faça isso apenas em uma máquina de desenvolvimento consciente desse risco:
+
+```bash
+sudo usermod -aG docker "$USER"
+newgrp docker
+docker info
+```
+
+## Smoke test completo
+
+```bash
+docker run -d --name pe-smoke -p 127.0.0.1:8088:80 nginx:alpine
+curl --fail http://127.0.0.1:8088/
+docker logs pe-smoke
+docker rm -f pe-smoke
+```
+
+## Problemas frequentes
+
+- WSL retorna “docker command could not be found”: habilite a integração da distribuição no Docker Desktop.
+- `permission denied` no socket: revise o grupo `docker` ou use rootless mode.
+- kind falha ao criar nodes: confirme espaço em disco, memória e acesso do daemon ao registry.

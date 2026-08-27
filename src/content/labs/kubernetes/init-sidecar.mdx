@@ -12,6 +12,10 @@ certifications: ["CKAD"]
 certificationDomain: "Application Design and Build"
 testedWith: ["Kubernetes 1.34"]
 repositoryPath: "labs/kubernetes/init-sidecar"
+format: "Guiado"
+scenario: "Um pod multi-container precisa preparar conteúdo antes do servidor e disponibilizar telemetria por um sidecar."
+successCriteria: ["Init conclui antes da aplicação", "Conteúdo compartilhado é servido", "Sidecar produz logs verificáveis"]
+constraints: ["Não incorporar conteúdo na imagem", "Não usar armazenamento persistente", "Manter containers separados"]
 draft: false
 featured: false
 ---
@@ -29,6 +33,14 @@ kubectl exec -n pe-multicontainer web -c web -- cat /usr/share/nginx/html/index.
 kubectl logs -n pe-multicontainer web -c log-reader
 make verify
 ```
+
+<details>
+<summary>Desafio de extensão</summary>
+
+Faça o init container encerrar temporariamente com código `1`, observe `initContainerStatuses` e prove que os containers principais não iniciam. Depois restaure o comando, adicione requests e limits ao sidecar e execute `make verify` novamente.
+
+</details>
+
 ## Limpar
 ```bash
 make cleanup

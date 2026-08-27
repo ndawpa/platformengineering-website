@@ -1,0 +1,51 @@
+---
+title: "Instalar e configurar kubectl"
+description: "Instale o cliente Kubernetes, verifique checksum e compatibilidade e aprenda a operar kubeconfig e contextos com segurança."
+tool: "kubectl"
+order: 2
+platforms: ["Linux", "macOS", "Windows"]
+prerequisites: ["curl ou um gerenciador de pacotes", "Um cluster será necessário apenas para a validação final"]
+officialDocs: "https://kubernetes.io/docs/tasks/tools/"
+verifiedAt: 2026-08-27
+draft: false
+---
+## Compatibilidade de versões
+
+Mantenha o `kubectl` no máximo uma versão minor acima ou abaixo do API server. Verifique primeiro:
+
+```bash
+kubectl version --client --output=yaml
+```
+
+## Linux com verificação de checksum
+
+```bash
+architecture=amd64 # use arm64 quando necessário
+version=$(curl -L -s https://dl.k8s.io/release/stable.txt)
+curl -LO "https://dl.k8s.io/release/${version}/bin/linux/${architecture}/kubectl"
+curl -LO "https://dl.k8s.io/release/${version}/bin/linux/${architecture}/kubectl.sha256"
+echo "$(cat kubectl.sha256)  kubectl" | sha256sum --check
+sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+rm kubectl kubectl.sha256
+```
+
+No macOS, use `brew install kubectl`. No Windows, use `winget install -e --id Kubernetes.kubectl`.
+
+## Contextos sem acidentes
+
+```bash
+kubectl config get-contexts
+kubectl config current-context
+kubectl config use-context NOME
+kubectl cluster-info
+```
+
+Antes de executar qualquer lab, confirme contexto e namespace. Nunca presuma que o contexto atual aponta para um cluster local.
+
+## Autocompletion opcional
+
+```bash
+source <(kubectl completion bash)
+alias k=kubectl
+complete -o default -F __start_kubectl k
+```

@@ -1,0 +1,48 @@
+---
+title: "Processos, sinais e troubleshooting"
+description: "Localize um processo em background, examine sua árvore e encerre somente o alvo correto usando sinais Unix."
+category: "Linux"
+level: "Iniciante"
+duration: 30
+updatedAt: 2026-08-26
+prerequisites: ["Docker, Git e Make"]
+objectives: ["Encontrar processos e PIDs", "Interpretar estado e árvore", "Enviar SIGTERM sem afetar outros processos"]
+tools: ["Ubuntu", "ps", "pgrep", "kill"]
+certifications: ["LFCS"]
+certificationDomain: "Operations Deployment"
+testedWith: ["Ubuntu 24.04"]
+repositoryPath: "labs/linux/processos-sinais"
+format: "Desafio"
+scenario: "Um worker defeituoso consome recursos em background, enquanto outro processo semelhante deve permanecer ativo."
+successCriteria: ["Worker correto encerrado", "Processo não relacionado preservado", "PID identificado por evidência"]
+constraints: ["Não reiniciar o container", "Não usar kill -9 inicialmente", "Não usar pkill amplo"]
+draft: false
+featured: true
+---
+## Preparar e investigar
+```bash
+git clone https://github.com/ndawpa/platformengineering-website.git
+cd platformengineering-website/labs/linux/processos-sinais
+make setup
+make shell
+```
+Use `ps aux`, `ps -ef --forest`, `pgrep -af` e `/proc/<pid>/status`. Há um worker que grava datas e um processo `sleep` que deve ser preservado.
+## Encerrar com segurança
+Leia `/work/worker.pid`, correlacione PID, comando e arquivo aberto e envie o sinal menos destrutivo adequado. Não use `pkill` amplo.
+
+<details>
+<summary>Dicas e solução de referência</summary>
+```bash
+worker=$(cat /work/worker.pid)
+kill -TERM "$worker"
+sleep 1
+kill -0 "$worker" 2>/dev/null || echo encerrado
+```
+</details>
+
+## Validar e limpar
+```bash
+exit
+make verify
+make cleanup
+```

@@ -1,0 +1,6 @@
+---
+import { getCollection, render } from 'astro:content'; import GetStartedLayout from '../../layouts/GetStartedLayout.astro';
+export async function getStaticPaths(){const guides=await getCollection('getStarted',({data})=>!data.draft);return Promise.all(guides.map(async guide=>{const {Content,headings}=await render(guide);return{params:{id:guide.id},props:{guide,Content,headings}};}));}
+const {guide,Content,headings}=Astro.props;
+---
+<GetStartedLayout guide={guide} headings={headings}><Content /></GetStartedLayout>

@@ -1,0 +1,57 @@
+---
+title: "Instalar Argo CD em um cluster local"
+description: "Instale Argo CD por manifests oficiais, acesse a API com port-forward e valide CLI, componentes e reconciliação inicial."
+tool: "Argo CD"
+order: 6
+platforms: ["Linux", "macOS", "Windows"]
+prerequisites: ["Cluster kind ou Minikube ativo", "kubectl configurado no contexto correto", "Pelo menos 4 GB de memória disponíveis"]
+officialDocs: "https://argo-cd.readthedocs.io/en/stable/getting_started/"
+verifiedAt: 2026-08-27
+draft: false
+---
+## Confirmar o alvo
+
+```bash
+kubectl config current-context
+kubectl get nodes
+```
+
+Não continue se o contexto apontar para produção.
+
+## Instalar os componentes
+
+```bash
+kubectl create namespace argocd
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+kubectl wait --for=condition=Available deployment --all -n argocd --timeout=300s
+kubectl get pods -n argocd
+```
+
+O branch `stable` simplifica aprendizado, mas produção deve fixar uma versão revisada para garantir reprodutibilidade.
+
+## Instalar e validar a CLI
+
+Use o método oficial do seu sistema na seção CLI Installation. Depois:
+
+```bash
+argocd version --client
+kubectl port-forward service/argocd-server -n argocd 8080:443
+```
+
+Em outro terminal, obtenha a senha inicial e faça login local:
+
+```bash
+argocd admin initial-password -n argocd
+argocd login localhost:8080 --insecure
+argocd cluster list
+```
+
+Troque a senha e remova o Secret inicial após validar o acesso.
+
+## Troubleshooting e remoção
+
+```bash
+kubectl get events -n argocd --sort-by=.lastTimestamp
+kubectl logs -n argocd deployment/argocd-server
+kubectl delete namespace argocd
+```

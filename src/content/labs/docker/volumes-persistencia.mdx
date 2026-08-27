@@ -11,6 +11,10 @@ tools: ["Docker", "Compose", "Volumes"]
 certifications: []
 testedWith: ["Docker Compose 2.39"]
 repositoryPath: "labs/docker/volumes"
+format: "Guiado"
+scenario: "Dados gravados por um processo precisam sobreviver à recriação de containers e ficar somente leitura no consumidor."
+successCriteria: ["Dados sobrevivem ao down/up", "Leitor monta read-only", "Limpeza remove o volume explicitamente"]
+constraints: ["Não usar bind mount", "Não copiar dados para a imagem", "Não apagar o volume antes da validação"]
 draft: false
 featured: false
 ---
@@ -32,3 +36,10 @@ make verify
 ```bash
 make cleanup
 ```
+
+<details>
+<summary>Desafio de extensão</summary>
+
+Execute o writer com UID `10001`, provoque uma falha de permissão no volume, diagnostique owner e mode dentro de um container descartável e corrija sem usar `chmod 777`. Depois demonstre a diferença entre `down` e `down --volumes`.
+
+</details>

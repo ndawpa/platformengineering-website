@@ -1,0 +1,48 @@
+---
+title: "Diagnóstico de rede e resolução de nomes"
+description: "Investigue hostname, rota, DNS, sockets e HTTP em um serviço local sem depender de ferramentas gráficas."
+category: "Linux"
+level: "Intermediário"
+duration: 35
+updatedAt: 2026-08-26
+prerequisites: ["Docker, Git e Make", "Noções de IP, portas e DNS"]
+objectives: ["Inspecionar interfaces e rotas", "Verificar resolução com getent e dig", "Relacionar socket TCP e processo"]
+tools: ["Ubuntu", "ip", "ss", "curl", "dig"]
+certifications: ["LFCS"]
+certificationDomain: "Networking"
+testedWith: ["Ubuntu 24.04"]
+repositoryPath: "labs/linux/networking"
+format: "Desafio"
+scenario: "Um serviço local está ativo, mas a equipe precisa provar resolução, rota, socket e resposta HTTP com evidências reproduzíveis."
+successCriteria: ["Nome resolve para loopback", "Socket 8080 está escutando", "HTTP retorna conteúdo esperado"]
+constraints: ["Não alterar /etc/hosts", "Não reiniciar o serviço", "Registrar evidências em arquivo"]
+draft: false
+featured: true
+---
+## Coletar evidências
+```bash
+git clone https://github.com/ndawpa/platformengineering-website.git
+cd platformengineering-website/labs/linux/networking
+make setup
+make shell
+ip address
+ip route
+getent hosts api.internal
+ss -lntp
+curl -v http://api.internal:8080
+```
+Crie `/work/diagnostico.txt` registrando hostname, endereço resolvido, rota, socket, processo e resultado HTTP. Inclua literalmente `api.internal`. Diferencie falha de DNS, conexão recusada e timeout.
+
+<details>
+<summary>Dica e solução de referência</summary>
+```bash
+{ hostname; getent hosts api.internal; ss -lnt; curl -s http://api.internal:8080; } > /work/diagnostico.txt
+```
+</details>
+
+## Validar e limpar
+```bash
+exit
+make verify
+make cleanup
+```

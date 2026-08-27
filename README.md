@@ -166,6 +166,14 @@ Para adicionar um laboratório:
 
 O primeiro exemplo, `labs/kubernetes/crashloopbackoff`, usa kind e um namespace exclusivo. Essa separação permitirá adicionar futuramente um executor interativo sem acoplar o conteúdo editorial à infraestrutura de provisionamento.
 
+### Profundidade dos labs
+
+Labs introdutórios ensinam uma competência isolada. Labs avançados devem simular incidentes ou mudanças com múltiplas etapas, declarar restrições, exigir coleta de evidências, esconder a solução de referência e validar o resultado ponta a ponta. O cenário `incidente-api-multifalha` é o modelo para novos exercícios avançados.
+
+## Get Started
+
+Guias de preparação ficam em `src/content/get-started/` e são publicados em `/get-started/`. Eles cobrem instalação, validação, compatibilidade, escolha da ferramenta, troubleshooting e remoção. Use apenas documentação oficial como fonte e atualize `verifiedAt` sempre que revisar comandos ou requisitos.
+
 ## Autores, revisão e contribuições
 
 Autores são centralizados em `AUTHORS`, no arquivo `src/config/site.ts`. Artigos apontam para o perfil da equipe editorial, mostram fontes e histórico de revisão e oferecem um link para edição no GitHub. Atualize `contentRepository` antes de publicar caso o repositório definitivo tenha outro endereço.

@@ -11,6 +11,10 @@ tools: ["Docker", "Dockerfile"]
 certifications: []
 testedWith: ["Docker 28"]
 repositoryPath: "labs/docker/multistage"
+format: "Guiado"
+scenario: "Uma imagem de runtime contém artefatos corretos, mas precisa demonstrar separação verificável entre build e execução."
+successCriteria: ["Imagem final executável", "Artefato servido por HTTP", "Ferramentas do builder ausentes no runtime"]
+constraints: ["Usar ao menos dois estágios", "Não copiar todo o filesystem", "Não executar como root"]
 draft: false
 featured: true
 ---
@@ -28,3 +32,10 @@ make verify
 docker run --rm -p 127.0.0.1:8080:8080 pe-lab/multistage:local
 ```
 Em outro terminal, acesse `http://127.0.0.1:8080`. Depois interrompa com `Ctrl+C` e execute `make cleanup`.
+
+<details>
+<summary>Desafio de extensão</summary>
+
+Crie deliberadamente uma imagem single-stage contendo ferramentas de build, compare tamanho e `docker history`, examine as duas imagens com `docker image inspect` e restaure a versão multi-stage. Adicione um usuário não-root ao runtime e adapte a porta sem conceder capabilities.
+
+</details>

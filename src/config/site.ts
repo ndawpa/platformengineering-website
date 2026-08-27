@@ -30,7 +30,7 @@ export const SITE = {
 } as const;
 
 export const CATEGORIES = [
-  'Platform Engineering', 'Kubernetes', 'Docker', 'Terraform', 'AWS', 'Azure', 'DevOps',
+  'Platform Engineering', 'Kubernetes', 'Docker', 'Linux', 'Terraform', 'AWS', 'Azure', 'DevOps',
   'SRE', 'GitOps', 'CI/CD', 'Observability', 'DevSecOps',
 ] as const;
 

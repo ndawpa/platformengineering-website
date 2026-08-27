@@ -1,0 +1,49 @@
+---
+title: "Usuários, grupos e permissões Linux"
+description: "Corrija ownership e modos de um diretório compartilhado, use setgid e valide o acesso de dois usuários sem abrir permissões globais."
+category: "Linux"
+level: "Iniciante"
+duration: 35
+updatedAt: 2026-08-26
+prerequisites: ["Docker, Git e Make"]
+objectives: ["Gerenciar usuários e grupos", "Aplicar chmod e chown", "Usar setgid em diretórios compartilhados"]
+tools: ["Ubuntu", "chmod", "chown", "useradd"]
+certifications: ["LFCS"]
+certificationDomain: "Users and Groups"
+testedWith: ["Ubuntu 24.04"]
+repositoryPath: "labs/linux/permissoes"
+format: "Desafio"
+scenario: "Duas pessoas precisam colaborar em um diretório sem conceder leitura ou escrita a outros usuários do sistema."
+successCriteria: ["Ambos pertencem ao grupo platform", "Diretório usa setgid", "Outros não possuem acesso"]
+constraints: ["Não usar chmod 777", "Não alterar o shell dos usuários", "Preservar o conteúdo"]
+draft: false
+featured: true
+---
+## Criar o ambiente isolado
+```bash
+git clone https://github.com/ndawpa/platformengineering-website.git
+cd platformengineering-website/labs/linux/permissoes
+make setup
+make shell
+```
+Dentro do container, inspecione `ana`, `bruno` e `/work/projeto` com `id`, `ls -ld` e `stat`.
+## Resolver o desafio
+Adicione os dois usuários ao grupo `platform`. Altere o grupo do diretório e configure modo `2770`, preservando acesso apenas ao dono e grupo. Valide sua hipótese com `namei -l`, `stat` e `su` antes de abrir a solução.
+
+<details>
+<summary>Dicas e solução de referência</summary>
+```bash
+usermod -aG platform ana
+usermod -aG platform bruno
+chown -R root:platform /work/projeto
+chmod 2770 /work/projeto
+chmod 660 /work/projeto/config.txt
+```
+</details>
+
+## Validar e limpar
+```bash
+exit
+make verify
+make cleanup
+```

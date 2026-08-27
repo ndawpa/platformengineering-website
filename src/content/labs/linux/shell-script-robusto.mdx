@@ -1,0 +1,56 @@
+---
+title: "Shell script com argumentos e exit codes"
+description: "Escreva um health check Bash que valide argumentos, reporte serviços problemáticos e use códigos de saída corretamente."
+category: "Linux"
+level: "Intermediário"
+duration: 45
+updatedAt: 2026-08-26
+prerequisites: ["Docker, Git e Make", "Bash básico"]
+objectives: ["Validar argumentos", "Iterar arquivos com quoting seguro", "Usar stdout, stderr e exit codes"]
+tools: ["Ubuntu", "Bash", "shellcheck concepts"]
+certifications: ["LFCS"]
+certificationDomain: "Operations e Essential Commands"
+testedWith: ["Ubuntu 24.04", "Bash 5.2"]
+repositoryPath: "labs/linux/shell-script"
+format: "Desafio"
+scenario: "Uma automação de health check será consumida por CI e precisa comunicar falhas por saída e código de retorno confiáveis."
+successCriteria: ["Serviço unhealthy identificado", "Exit 1 quando há falha", "Exit 0 quando tudo está saudável"]
+constraints: ["Usar quoting seguro", "Validar argumento obrigatório", "Não modificar os arquivos de entrada"]
+draft: false
+featured: true
+---
+## Escrever o verificador
+```bash
+git clone https://github.com/ndawpa/platformengineering-website.git
+cd platformengineering-website/labs/linux/shell-script
+make setup
+make shell
+```
+Crie `/work/check-services.sh`. Ele deve validar o argumento, suportar nomes com espaços, imprimir falhas em stderr, retornar `1` quando houver serviço unhealthy e `0` quando todos estiverem saudáveis.
+
+<details>
+<summary>Dicas e solução de referência</summary>
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+directory=${1:?uso: check-services.sh DIRETORIO}
+failed=0
+for service in "$directory"/*; do
+  if [[ $(<"$service") != healthy ]]; then
+    basename "$service"
+    failed=1
+  fi
+done
+exit "$failed"
+```
+</details>
+
+## Validar e limpar
+Salve, torne o arquivo executável e teste os dois caminhos:
+```bash
+chmod +x /work/check-services.sh
+/work/check-services.sh /work/services; echo "$?"
+exit
+make verify
+make cleanup
+```

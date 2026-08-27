@@ -12,6 +12,10 @@ certifications: ["CKS"]
 certificationDomain: "Minimize Microservice Vulnerabilities"
 testedWith: ["Kubernetes 1.34"]
 repositoryPath: "labs/kubernetes/pod-security"
+format: "Desafio"
+scenario: "Um namespace aplica o padrão restricted e uma especificação legada precisa ser endurecida até passar pelo admission controller."
+successCriteria: ["Pod compatível fica Ready", "Pod privilegiado é rejeitado", "Token não é montado"]
+constraints: ["Não remover labels de enforcement", "Não usar privileged", "Não executar como UID 0"]
 draft: false
 featured: true
 ---
@@ -25,12 +29,17 @@ kubectl run privileged -n pe-security --image=busybox:1.37.0 \
   -- sleep 60
 ```
 Leia a mensagem do admission controller e identifique violações de capabilities, usuário e seccomp.
+<details>
+<summary>Dicas e solução de referência</summary>
+
 ## Aplicar a especificação segura
 ```bash
 kubectl apply -f compliant-pod.yaml
 kubectl get pod compliant -n pe-security -o yaml
 make verify
 ```
+</details>
+
 ## Limpar
 ```bash
 make cleanup

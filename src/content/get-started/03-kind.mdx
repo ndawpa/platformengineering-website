@@ -1,0 +1,60 @@
+---
+title: "Criar clusters locais com kind"
+description: "Instale kind, crie clusters reproduzíveis sobre Docker, carregue imagens locais e diagnostique falhas de bootstrap."
+tool: "kind"
+order: 3
+platforms: ["Linux", "macOS", "Windows"]
+prerequisites: ["Docker ou Podman funcionando", "kubectl instalado", "Pelo menos 4 GB de memória livres"]
+officialDocs: "https://kind.sigs.k8s.io/docs/user/quick-start/"
+verifiedAt: 2026-08-27
+draft: false
+---
+## Quando escolher kind
+
+Use kind para clusters descartáveis, testes de manifests, CI e topologias multi-node. Ele executa os nodes Kubernetes como containers e não pretende simular integralmente uma VM de produção.
+
+## Instalar
+
+macOS e Linux com Homebrew:
+
+```bash
+brew install kind
+kind version
+```
+
+No Windows use `winget install Kubernetes.kind`. Para binários diretos e checksums, use a seção Installation da documentação oficial, escolhendo arquitetura e release explicitamente.
+
+## Criar um cluster reproduzível
+
+```yaml
+# kind.yaml
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: estudos
+nodes:
+  - role: control-plane
+  - role: worker
+```
+
+```bash
+kind create cluster --config kind.yaml --wait 120s
+kubectl cluster-info --context kind-estudos
+kubectl get nodes -o wide
+```
+
+## Usar uma imagem local
+
+```bash
+docker build -t demo:v1 .
+kind load docker-image demo:v1 --name estudos
+```
+
+No manifesto use `imagePullPolicy: IfNotPresent` ou `Never`; caso contrário o kubelet tentará buscar a imagem em um registry.
+
+## Diagnóstico e remoção
+
+```bash
+kind export logs ./kind-logs --name estudos
+docker ps --filter label=io.x-k8s.kind.cluster=estudos
+kind delete cluster --name estudos
+```

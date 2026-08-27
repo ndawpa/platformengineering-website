@@ -12,6 +12,10 @@ certifications: ["CKA"]
 certificationDomain: "Workloads & Scheduling"
 testedWith: ["Kubernetes 1.34"]
 repositoryPath: "labs/kubernetes/scheduling-recursos"
+format: "Desafio"
+scenario: "Um worker crítico permanece Pending em namespace com quota e precisa ser agendado no pool correto."
+successCriteria: ["Pod Ready no worker applications", "Requests e limits preservados", "Quota respeitada"]
+constraints: ["Não usar nodeName", "Não remover ResourceQuota", "Não alterar labels dos nodes"]
 draft: false
 featured: false
 ---
@@ -48,6 +52,9 @@ kubectl get pod worker -n pe-scheduling -o jsonpath='{.spec.containers[0].resour
 echo
 ```
 
+<details>
+<summary>Dicas progressivas e solução de referência</summary>
+
 ## Corrigir o agendamento
 
 Pods não permitem alterar `nodeSelector` depois de criados. Gere uma cópia, remova o pod e recrie-o declarativamente:
@@ -64,6 +71,8 @@ Em um fluxo real, altere o manifesto versionado em vez do arquivo exportado. Val
 make verify
 kubectl get pod worker -n pe-scheduling -o wide
 ```
+
+</details>
 
 ## Limpar
 

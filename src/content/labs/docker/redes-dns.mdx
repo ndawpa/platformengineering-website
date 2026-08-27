@@ -11,6 +11,10 @@ tools: ["Docker", "Compose", "DNS"]
 certifications: []
 testedWith: ["Docker Compose 2.39"]
 repositoryPath: "labs/docker/networks"
+format: "Guiado"
+scenario: "Dois serviços precisam se comunicar por nome em rede privada sem publicar a API diretamente no host."
+successCriteria: ["DNS interno resolve api", "Cliente recebe HTTP 200", "API não publica porta no host"]
+constraints: ["Não usar IP fixo", "Não usar network_mode host", "Manter rede dedicada"]
 draft: false
 featured: true
 ---
@@ -30,3 +34,10 @@ make verify
 docker compose exec client wget -qO- http://api:8080
 make cleanup
 ```
+
+<details>
+<summary>Desafio de extensão</summary>
+
+Adicione uma segunda rede `frontend`, conecte apenas o cliente às duas redes e prove que um terceiro container ligado somente à `frontend` não alcança `api`. Registre DNS, rotas e tentativa TCP para diferenciar isolamento de falha de resolução.
+
+</details>
