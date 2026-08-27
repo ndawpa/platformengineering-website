@@ -131,9 +131,11 @@ jobs:
               ;;
             storage-pvc) : ;;
             incidente-api-multifalha)
+              kubectl scale deployment api -n pe-incident --replicas=0
               kubectl patch configmap api-config -n pe-incident --type=merge -p '{"data":{"API_ENDPOINT":"http://api.pe-incident.svc"}}'
               kubectl patch deployment api -n pe-incident --type=json -p='[{"op":"replace","path":"/spec/template/spec/containers/0/readinessProbe/httpGet/path","value":"/"}]'
               kubectl patch service api -n pe-incident --type=merge -p '{"spec":{"selector":{"app":"api"}}}'
+              kubectl scale deployment api -n pe-incident --replicas=2
               kubectl rollout status deployment/api -n pe-incident --timeout=120s
               kubectl wait --for=condition=Ready pod/client -n pe-incident --timeout=120s
               ;;
