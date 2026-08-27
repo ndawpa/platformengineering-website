@@ -7,7 +7,7 @@ status=$?
 set -e
 test "$status" -eq 1
 grep -q 'worker' <<< "$output"
-cp /work/services/worker /work/services/worker.bak
+cp /work/services/worker /work/worker.bak
 echo healthy > /work/services/worker
 /work/check-services.sh /work/services >/dev/null
 echo 'Script, argumentos e exit codes validados.'
